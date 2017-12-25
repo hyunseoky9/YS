@@ -1,0 +1,153 @@
+---
+title: "Seasonal heterozygote advantage with introduction of new mutations"
+output:
+  pdf_document: default
+  html_document: default
+---
+This model seeks for heterozygosity advantage in a diploid in shifting seasons through simulating population frequency each time step. Depending on the expression level difference due to mutation allele, the 
+survival probability changes along the normal curve. In dominancy4, a new, third mutation is introduced to the population at time step 100generations with a random change in expression level.
+
+Let's start with setting up all the values for the variables
+```{r, echo=FALSE}
+rm(list=ls())
+# x is frequency of the alleles in the beginning. x[1]=wild-type freq, and x[2]=mutant_allele freq.)
+x = c(499/500,1/500) 
+freq = c(x) # freq will keep track of frequency change
+t=1000 # generation amount
+s = 1 # current season
+switch = 5 # number of generations before a season change.
+```
+
+The fitness (survival probability) is different for the expression level of subject gene. We assume the fitness for a expression level shows a normal curve, and that curve has different means for each season (u1=u2; sig is variance of the curve).
+```{r, echo=FALSE}
+u1 = 0.333; u2 = 0.666; sig = 0.1665
+expression_level = seq(0,1,0.01)
+y1 = dnorm(expression_level,u1,sig)
+y2 = dnorm(expression_level,u2,sig)
+plot(y1~expression_level, xlim=c(0,1), type='l', ylab='fitness')
+lines(y2~expression_level)
+
+```
+
+We assume mutant allele's effect on the expression_level is additive.
+
+
+```{r}
+a1 = runif(1,0,0.5) #expression level of a wildtype homozygote
+# d is the distance added to the expression_level with one mutant allele.
+d = ((-2*a1+u1+u2)/3 + (-2*a1+u1+u2))/2
+# exp_d keeps track of additive effect each allele has. wild type  allele is marked as having 0 additive effect.
+exp_d = c(0,d)
+a = c(a1, a1+d, a1+2*d) # the expression level of the different genotypes.
+# w1 and w2 are the fitness level for different genotypes in season 1 and season 2, respectively.
+w1 = dnorm(a,u1,sig)/dnorm(u1,u1,sig)
+w2 = dnorm(a,u2,sig)/dnorm(u2,u2,sig)
+w = w1 #set current season as w1
+new_mut = 100 #time step(generations) when new mutation comes in
+```
+
+Now, let's start looping through each generation and measure the frequency change. In each time step, the next frequency of an allele j is as follows:
+
+$x[j](t+1) =\frac{w_{jj}x[j]^2+\Sigma_{i}w_{ji}x[j](x[j]-1)}{\bar{w}}$
+
+$\bar{w} = w_{jj}x[j]^2+\Sigma_{i}(2w_{ji}x[j]x[i]+w_{ii}x[i]^2)$
+```{r}
+for(i in 1:new_mut){ #loooping time step
+  if(i%%switch == 1 && i>1){ # change season after specified generation time
+    if(s==1){
+      s=2
+      w = w2
+    } else {
+      s=1
+      w = w1
+    }
+  }
+  wbar = w[1]*x[1]^2 + w[2]*2*x[1]*x[2] + w[3]*x[2]^2
+  x[2] = (w[3]*x[2]^2 + w[2]*x[1]*x[2])/wbar
+  x[1] = (w[2]*x[1]*x[2]+w[1]*x[1]^2)/wbar
+  freq = cbind(freq,x) #keep track of frequency change
+}
+```
+
+We now introduce a new mutant allele.
+```{r}
+d2 = runif(1,0,0.5) # new mutation's additive effect on expression level.
+exp_d = c(exp_d,d2)
+a = c() #remake the genotypes' expression level array
+alleles_list = c() #keeps record of which index is what genotype
+for(i in 1:length(exp_d)){ 
+  for(j in i:length(exp_d)){
+    a = c(a, a1+exp_d[i]+exp_d[j])
+    alleles_list = cbind(alleles_list,c(i,j)) # each column specifies the index's genotype.
+  }
+}
+w1 = dnorm(a,u1,sig)/dnorm(u1,u1,sig) #remake all the w1 & w2
+w2 = dnorm(a,u2,sig)/dnorm(u2,u2,sig)
+w = w1 #current season is 1
+
+# put in frequency for third allele. New mutation arise from wild-type
+x = c(x[1]-1/500, x[2:length(x)], 1/500)
+# put all the past freq for third allele (which is 0)
+freq = rbind(freq,rep(0,dim(freq)[2]))
+freq[,ncol(freq)] = x
+```
+
+Now we loop through generations with 3 alleles and record frequencies.
+```{r}
+#time steps after 3rd mutation
+for(i in (new_mut+1):t){ #loooping time step
+  if(i%%switch == 1){ # change season after specified generation time
+    if(s==1){
+      s=2
+      w = w2
+    } else {
+      s=1
+      w = w1
+    }
+  }
+  x_square = c()
+  for(j in 1:ncol(alleles_list)){ # get all the factors when x is squared
+    if(alleles_list[1,j]==alleles_list[2,j]){
+      x_square = c(x_square, x[alleles_list[1,j]]*x[alleles_list[2,j]])
+    } else{
+      x_square = c(x_square, 2*x[alleles_list[1,j]]*x[alleles_list[2,j]])
+    }
+  }
+  wbar = sum(x_square*w)
+  for(j in 1:length(x)){ # update each frequency in x
+    factor_sum = 0
+    for(k in 1:ncol(alleles_list)){ # for every genotype
+      if(all(alleles_list[,k]==j)){
+        factor_sum = factor_sum + x_square[k]*w[k]
+      } else if(any(alleles_list[,k]==j)){
+        factor_sum = factor_sum + 0.5*x_square[k]*w[k]
+      }
+    }
+    x[j] = factor_sum/wbar
+  }
+  freq = cbind(freq,x) #keep track of frequencies each generation
+}
+```
+
+Let's plot the geometric mean of w1 and w2 for each allele, and frequencies for each allele.
+```{r}
+#result output in plots
+par(mfrow=c(3,1))
+par(mar=c(2,2,2,2))
+title = sprintf('bl=1,r=2,g=3')
+time_line = 100:1000
+plot(freq[1,time_line], ylim=c(0,1), type='l',main = title) #plot of frequency
+lines(freq[2,time_line],type='l',col=2)
+lines(freq[3,time_line],type='l',col=3)
+
+allele_label = c()
+for( i in 1:ncol(alleles_list)){
+  label = sprintf('A%s%s',alleles_list[1,i],alleles_list[2,i])
+  allele_label = c(allele_label, label)
+}
+ww = w1*w2
+plot(ww, axes=FALSE, ylim=c(0,max(ww)), col=1) #plot of w1*w2
+axis(2)
+axis(1, at=seq_along(ww),labels=allele_label)
+title('harmonic mean of two seasons (w1*w2)')
+```
