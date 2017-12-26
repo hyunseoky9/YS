@@ -2,9 +2,22 @@
 # through simulating population frequency each time step. 
 # depending on the expression level difference due to mutation allele, the 
 # survival probability changes along the normal curve.
-# In dominancy5, we have multiple mutations rising in a rate of mutation in the loci.
+# In dominancy6, we have multiple mutations rising in a rate of
+# mutation in the loci. In addition the frequency now has stochastic
+# element through WF model simulation.
 
 rm(list=ls())
+
+genotype2index <- function(genotype, new_al_num) {
+# converts the genotype to the index in new population array 
+  if(min(genotype)==1){
+    index = max(genotype)
+  } else {
+    index = sum(seq(new_al_num,1)[1:(min(genotype)-1)]) +
+    abs(genotype[2]-genotype[1]) + 1
+  }
+  return(index)
+}
 # in stat in each round, who survived, ww order.
 survivors = list()
 means = list()
@@ -13,12 +26,12 @@ topdog = c()
 max_alleles = 0
 
 for(n in 1:10){
-  N = 10000
-  mu = 1
-  x = c(1) #frequency
-  pop = matrix(c(N),ncol=1,nrow=1) #matrix of population for a genotype pop[1,2] = population of genotype 12
+  N = 100
+  mu = 0.001
+  x = c(1) #frequency of alleles
+  pop = matrix(c(N),ncol=1,nrow=1) #array of population of genotypes
   freq = matrix(x,ncol=1,nrow=1)
-  t = 2 # generation amount
+  t = 5000 # generation amount
   switch = 5 #generation amount after a season change.
   u1 = 0.333; u2 = 0.666; sig = 0.1665 #means of normal curves for different seasons.
   #a1 = 0.07450218; d = 0.4570124
@@ -40,10 +53,13 @@ for(n in 1:10){
     }
     arise = runif(1)
     #assumption: mutation arises only once per generation
+    #protocol for when mutation arises
     if (arise < mu){ # algorithm for new mutation arising
-      arise_from = ceiling(runif(1)*length(x)) #allele number that the mutation arose from
-      other_allele = ceiling(runif(1)*length(x))
-      mutant_arisen_genotype = sort(c(arise_from,other_allele))
+      positive_pop = which(pop>0) #select genotypes that have counts
+      select_mutant = positive_pop[ceiling(runif(1)*length(positive_pop))] #select the genotype that will mutate out of the genotypes with positive counts
+      mutant_arisen_genotype = genotypes_list[,select_mutant]
+      arise_from = mutant_arisen_genotype[ceiling(runif(1)*length(mutant_arisen_genotype))] #allele number that the mutation arose from
+      other_allele = mutant_arisen_genotype[which(mutant_arisen_genotype != arise_from)]
       mutant_genotype = sort(c(length(x)+1,other_allele))
       d_new = runif(1,-0.5,0.5) # new mutation expression dist.
       new_exp = all_exp[arise_from]+d_new
@@ -51,29 +67,30 @@ for(n in 1:10){
         new_exp = 0
       }
       all_exp = c(all_exp,new_exp)
-      newpop = rep(0,sum(seq(1,length(all_exp))))
+      newpop = rep(0, sum(seq(1,length(all_exp)))) #new population with added allele
+      j=1
+      tempop = pop
+      for(i in length(x):1){ #put old pop into new pop count
+        newpop[j:(j+i-1)] = tempop[1:i]
+        tempop = tempop[-(1:i)]
+        j = j + (i-1) + 2
+      }
+      #find index of the mutant genotypes in the newpop
+      from_index = genotype2index(mutant_arisen_genotype,length(x)+1)
+      to_index = genotype2index(mutant_genotype,length(x)+1)
       new_genotypes_list = c() #keeps record of which index is what genotype
       #allele combination orders stored
       a = c() #reset genotype expression level
-      for(i in 1:length(all_exp)){ #refill all the expression levels
+      #refill all the expression levels for genotypes and 
+      for(i in 1:length(all_exp)){
         for(j in i:length(all_exp)){
           a = c(a,all_exp[i]+all_exp[j])
           new_genotypes_list = cbind(new_genotypes_list,c(i,j))
-          for(k in 1:ncol(genotypes_list)){
-            if(all(c(i,j) == genotypes_list[,k])){
-              newpop[ncol(new_genotypes_list)] = pop[k]
-            }
-            if(all(c(i,j) == mutant_arisen_genotype)){
-              mutant_geno_index_from = ncol(new_genotypes_list)
-            }
-            if(all(c(i,j) == mutant_genotype)){
-              mutant_geno_index_to = ncol(new_genotypes_list)
-            }
-          }
         }
       }
       # add mutation to the newpop
-      newpop = 
+      newpop[from_index] = newpop[from_index] - 1
+      newpop[to_index] = newpop[to_index] + 1
       genotypes_list = new_genotypes_list
       if(all(w == w1)){
         w1 = dnorm(a,u1,sig)/dnorm(u1,u1,sig) #remake all the w1&w2
@@ -84,9 +101,10 @@ for(n in 1:10){
         w2 = dnorm(a,u2,sig)/dnorm(u2,u2,sig)
         w = w2 
       }
-      x = 
+      pop = newpop
+      x[arise_from] = x[arise_from] - 1/(2*N)
+      x = c(x,1/(2*N))
       freq = rbind(freq,rep(0,dim(freq)[2]))
-      # freq = cbind(freq,x)
     }
     x_square = c()
     for(j in 1:ncol(genotypes_list)){ #get all the factors when x is squared
@@ -98,9 +116,22 @@ for(n in 1:10){
     }
     wbar = sum(x_square*w)
     pop = rmultinom(1, size=N, x_square/wbar*w) #stochastic reproduction
-    x = 
+    for(j in 1:length(x)){ #calculate allele frequencies for the next gen.
+      factor_sum = 0
+      for(i in 1:ncol(genotypes_list)){
+        if(any(genotypes_list[,i] == j)){
+          if(genotypes_list[1,i] == genotypes_list[2,i]){
+            factor_sum = factor_sum + pop[i]
+          } else {
+            factor_sum = factor_sum + pop[i]/2
+          }
+        }
+      }
+      x[j] = factor_sum/N
+    }
     freq = cbind(freq,x) # update freq
   }
+}
   extinct = which(freq[,ncol(freq)] == 0)
   if (length(extinct)>0){
     survivors[[n]] = seq(1,length(x))[-extinct] # surviving alleles in each run in 'n'.
@@ -133,4 +164,23 @@ for(n in 1:10){
   title('geometric mean of two seasons (w1*w2)')
   plot(w1,main='w1') #plot of w1 and w2 (only the surviving ones).
   plot(w2,main='w2')
+}
+
+
+
+
+
+
+
+
+
+genotype2index <- function(genotype, new_al_num) {
+# converts the genotype to the index in new population array 
+  if(min(genotype)==1){
+    index = max(genotype)
+  } else {
+    index = sum(seq(new_al_num,1)[1:(min(genotype)-1)]) +
+    abs(genotype[2]-genotype[1]) + 1
+  }
+  return(index)
 }

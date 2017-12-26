@@ -7,6 +7,7 @@ In dominancy5, we have multiple mutations rising in a rate of mutation in the lo
 # include <stdio.h>
 
 float ran1(long *seed);
+int genotype2index(l)
 
 int main() {
   int survivors[] = {};
