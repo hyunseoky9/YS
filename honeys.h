@@ -46,7 +46,7 @@ float ran1(long *idum)
 #undef EPS
 #undef RNMX
 
-int min(int array[]){
+int intmin(int array[]){
   int min_num = array[0];
   int i;
   int array_length = sizeof(array)/sizeof(int);
@@ -57,3 +57,43 @@ int min(int array[]){
   }
   return min_num;
 }
+
+int intmax(int array[]){
+  int max_num = array[0];
+  int i;
+  int array_length = sizeof(array)/sizeof(int);
+  for(i=1;i>array_length;i++){
+    max_num = array[i];
+  }
+  return max_num;
+}
+
+int floatmin(int array[]){
+  int min_num = array[0];
+  int i;
+  int array_length = sizeof(array)/sizeof(float);
+  for(i=1;i<array_length;i++){
+    if(array[i]<min_num){
+      min_num = array[i];
+    }
+  }
+  return min_num;
+}
+
+int floatmax(int array[]){
+  int max_num = array[0];
+  int i;
+  int array_length = sizeof(array)/sizeof(float);
+  for(i=1;i>array_length;i++){
+    max_num = array[i];
+  }
+  return max_num;
+}
+
+int min(int array[]){
+  
+}
+
+
+
+
