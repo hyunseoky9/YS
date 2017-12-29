@@ -18,7 +18,7 @@ int intmin(int argc,int array[]);
 int intsum(int length, int array[]);
 int *intseq(int init,int end, int inter);
 double dnorm(double x, double mu, double sig);
-double doublesum(int size; double a[]);
+double doublesum(int size, double a[]);
 
 int genotype2index(int genotype[],int new_al_num){
   int index;
@@ -109,16 +109,7 @@ int main(){
       printf("mutant_arisen_genotype: %d %d\n",mutant_arisen_genotype[0],mutant_arisen_genotype[1]);
       seed -= 1;
       int one = (int)floor(ran1(&seed)*2);
-      int other;
-      if(one == 1){
-      	other = 0;
-      } else {
-      	other = 1;
-      }
       int arise_from = mutant_arisen_genotype[one]; //allele number that the mutation arose from
-      int other_allele = mutant_arisen_genotype[other]; //allele that is paired with the mutant allele
-      int mutant_genotype[2] = {other_allele, len_all_exp+1}; //genotype of a mutant
-      printf("mutant_genotype: %d %d\n", mutant_genotype[0], mutant_genotype[1]);
       seed -= 1;
       double d_new = ran1(&seed)-0.5; //new allele's expression dist from the original state
       double new_exp = all_exp[arise_from-1] + d_new; //new mutation expression level
@@ -130,45 +121,6 @@ int main(){
       all_exp[len_all_exp-1] = new_exp;
       printf("all_exp: %f %f %f\n",all_exp[0],all_exp[1],all_exp[2]);
       int num = intsum(len_all_exp,intseq(1,len_all_exp,1));
-      printf("newpop's num: %d\n",num);
-      int *newpop = (int *) malloc(num*sizeof(int));
-      j = 0;
-      int *tempop = (int *) malloc((len_a)*sizeof(int));
-			int len_tempop = len_a;
-			memcpy(tempop,pop,len_a*sizeof(int));
-			for(int i=0; i<len_a;i++){
-				printf("tempop[%d]: %d\n", i, tempop[i]);
-			}
-			for(int i=(len_all_exp-1); i>0; i--){ //put pop in a newpop where indexing is different.
-      	for(int k=0;k<i;k++){
-      		newpop[j+k] = tempop[k];
-        }
-        int *temp = (int *) malloc((len_tempop-i)*sizeof(int));
-        //printf("temp: %d\n",temp[0]);
-        int l = 0;
-        for(int k=i;k<len_tempop;k++){
-        	temp[l] = tempop[k];
-        	l += 1;
-        	//printf("temp: %d\n",temp[0]);
-        	//printf("k is %d\n",k);
-        }
-        len_tempop = l;
-        free(tempop);
-        tempop = (int *) malloc(len_tempop*sizeof(int));        
-        if(l>0){
-        	memcpy(tempop, temp, len_tempop*sizeof(int));
-    		}
-    		free(temp);
-    	//printf("tempop: %d %d %d %d %d %d\n",tempop[0],tempop[1],tempop[2],tempop[3],tempop[4],tempop[5]);
-	  		j = j + (i-1) +2;
-			}
-			for(int i=0; i<num; i++){
-				printf("newpop[%d]: %d\n", i, newpop[i]);
-			}
-			//find index of the mutant genotypes in the newpop
-			int from_index = genotype2index(mutant_arisen_genotype, len_all_exp);
-			printf("from_index: %d\n",from_index);
-			int to_index = genotype2index(mutant_genotype, len_all_exp);
 			for(int i=0; i<len_a; i++){
 				free(genotypes_list[i]);
 			}
@@ -201,9 +153,6 @@ int main(){
 				}
 				printf("\n");
 			}
-			//add mutation to the newpop
-			newpop[from_index] -= 1;
-			newpop[to_index] += 1;
 			if(w[0] == w[1]){
 				free(w1);
 				free(w2);
@@ -229,9 +178,6 @@ int main(){
 				}
 				memcpy(w,w1,len_a*sizeof(double));
 			}
-			free(pop);
-			pop = (int *) malloc(len_a*sizeof(int));
-			memcpy(pop,newpop,len_a*sizeof(int));
 			x = (double *) realloc(x,len_all_exp*sizeof(double));
 			x[arise_from-1] = x[arise_from-1] - (double)1/(2*N);
 			x[len_all_exp-1] = (double)1/(2*N);
@@ -253,11 +199,11 @@ int main(){
     for(int i=0; i<len_a; i++){
     	wx[i] = w[i]*x_square[i];
     }
-    double wbar = doublesum(wx);
+    double wbar = doublesum(len_a,wx);
 
   }
 }
-
+/*
 x_square = c()
     for(j in 1:ncol(genotypes_list)){ #get all the factors when x is squared
       if(genotypes_list[1,j] == genotypes_list[2,j]){
@@ -383,7 +329,6 @@ double dnorm(double x, double mu, double sig) {
   double y = 1/sqrt(2*M_PI*pow(sig,2))*exp(-1*pow((x-mu),2)/(2*pow(sig,2)));
   return y;
 }
-
 
 double doublesum(int size,double a[]){
   int i;

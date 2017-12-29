@@ -1,0 +1,13 @@
+1.how to make matrix: https://stackoverflow.com/questions/2128728/allocate-matrix-in-c
+2.freeing matrix:
+
+	for(int i=0; i<col; i++){
+	        free(mat[i]);
+	    }
+	    free(mat);
+
+3. re-malloc'ing matrix:
+	mat = (int **) malloc(nrow*sizeof(int*));
+    for(int i=0; i<nrow; i++){
+        mat[i] = (int *) malloc(ncol*sizeof(int));
+    } 

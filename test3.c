@@ -72,43 +72,14 @@ double dnorm(double x, double mu, double sig) {
 }
 
 int main(){
-	int len_all_exp = 4;
-	int len_a = 6;
-	int num = intsum(len_all_exp,intseq(1,len_all_exp,1));
-	int *newpop = (int *) malloc(num*sizeof(int));
-	int j = 0;
-	int pop[6] = {1,2,3,4,5,6};
-	int *tempop = (int *) malloc((len_a)*sizeof(int));
-	int len_tempop = len_a;
-	memcpy(tempop,pop,len_a*sizeof(int));
-	for(int i=(len_all_exp-1); i>0; i--){
-      	for(int k=0;k<i;k++){
-      		newpop[j+k] = tempop[k];
-        }
-        int *temp = (int *) malloc((len_tempop-i)*sizeof(int));
-        //printf("temp: %d\n",temp[0]);
-        int l = 0;
-        for(int k=i;k<len_tempop;k++){
-        	temp[l] = tempop[k];
-        	l += 1;
-        	//printf("temp: %d\n",temp[0]);
-        	//printf("k is %d\n",k);
-        }
-        len_tempop = l;
-        free(tempop);
-        tempop = (int *) malloc(len_tempop*sizeof(int));        
-        if(l>0){
-        	memcpy(tempop, temp, len_tempop*sizeof(int));
-    	}
-    	free(temp);
-    	//printf("tempop: %d %d %d %d %d %d\n",tempop[0],tempop[1],tempop[2],tempop[3],tempop[4],tempop[5]);
-	  	j = j + (i-1) +2; 
+	int N = 100;
+	double probs[5] = {0.1,0.3,0.2,0.2,0.2};
+	double *probs_accum = (double *) malloc(5*sizeof(double));
+	probs_accum[0] = probs[0];
+	for(int i=0; i<5; i++){
+		probs_accum[i] += probs_accum[i-1];
 	}
-	printf("newpop\n");
-	for(int i=0; i<num; i++){
-		printf("%d\n",newpop[i]);
-	}
-	
+	for(int i=0,i<N; )
 	//printf("index is %d", index);
 	return 0;
 }
