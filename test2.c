@@ -108,7 +108,11 @@ int main(){
 	for(int i=0; i<num; i++){
 		printf("%d\n",newpop[i]);
 	}
-	
+	FILE * fPointer;
+	fPointer = fopen("test2.csv","w");
+	fprintf(fPointer,"%f,%f\n",3.4f,3.44f);
+	fprintf(fPointer,"%f,%f\n",0.654f,0.235f);
+	fclose(fPointer);
 	//printf("index is %d", index);
 	return 0;
 }

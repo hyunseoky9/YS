@@ -4,6 +4,54 @@
 #include <string.h>
 #define _USE_MATH_DEFINES
 
+#define IA 16807
+#define IM 2147483647
+#define AM (1.0/IM)
+#define IQ 127773
+#define IR 2836
+#define NTAB 32
+#define NDIV (1+(IM-1)/NTAB)
+#define EPS 1.2e-7
+#define RNMX (1.0-EPS)
+
+float ran1(long *idum)
+{
+  int j;
+  long k;
+  static long iy=0;
+  static long iv[NTAB];
+  float temp;
+
+  if (*idum <= 0 || !iy) {
+    if (-(*idum) < 1) *idum=1;
+    else *idum = -(*idum);
+    for (j=NTAB+7;j>=0;j--) {
+      k=(*idum)/IQ;
+      *idum=IA*(*idum-k*IQ)-IR*k;
+      if (*idum < 0) *idum += IM;
+      if (j < NTAB) iv[j] = *idum;
+    }
+    iy=iv[0];
+  }
+  k=(*idum)/IQ;
+  *idum=IA*(*idum-k*IQ)-IR*k;
+  if (*idum < 0) *idum += IM;
+  j=iy/NDIV;
+  iy=iv[j];
+  iv[j] = *idum;
+  if ((temp=AM*iy) > RNMX) return RNMX;
+  else return temp;
+}
+#undef IA
+#undef IM
+#undef AM
+#undef IQ
+#undef IR
+#undef NTAB
+#undef NDIV
+#undef EPS
+#undef RNMX
+
 int intmin(int argc, int array[]){
   int min_num = array[0];
   int i;
@@ -72,14 +120,35 @@ double dnorm(double x, double mu, double sig) {
 }
 
 int main(){
+	long seed = -1;
 	int N = 100;
 	double probs[5] = {0.1,0.3,0.2,0.2,0.2};
+	int pop[5] = {0,0,0,0,0};
 	double *probs_accum = (double *) malloc(5*sizeof(double));
 	probs_accum[0] = probs[0];
-	for(int i=0; i<5; i++){
-		probs_accum[i] += probs_accum[i-1];
+	for(int i=1; i<5; i++){
+		probs_accum[i] = probs[i] + probs_accum[i-1];
 	}
-	for(int i=0,i<N; )
-	//printf("index is %d", index);
+	printf("probs_accum:");
+	for(int  i=0; i<5; i++){
+		printf("%f ", probs_accum[i]);
+	}
+	printf("\n");
+	for(int i=0; i<N; i++){
+		seed -= 1;
+		if(ran1(&seed)<probs_accum[0]){
+			pop[0] += 1;
+		} else {
+			for(int j=1; j<5; j++){
+				if(ran1(&seed)<probs_accum[j] && ran1(&seed)>probs_accum[j-1]){
+					pop[j] += 1;
+				}
+			}	
+		}
+	}
+	printf("Pop:");
+	for(int i=0; i<5; i++){
+		printf("%d ", pop[i]);
+	}
 	return 0;
 }

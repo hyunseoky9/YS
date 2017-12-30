@@ -37,7 +37,8 @@ int genotype2index(int genotype[],int new_al_num){
   return index;
 }
 int main(){
-
+  FILE * fPointer;
+  fPointer = fopen("result.csv","w");
   int N = 100; //population
   double mu = 1; //mutation rate
   double *x = (double *) malloc(sizeof(double));
@@ -200,36 +201,53 @@ int main(){
     	wx[i] = w[i]*x_square[i];
     }
     double wbar = doublesum(len_a,wx);
-
-  }
-}
-/*
-x_square = c()
-    for(j in 1:ncol(genotypes_list)){ #get all the factors when x is squared
-      if(genotypes_list[1,j] == genotypes_list[2,j]){
-        x_square = c(x_square, x[genotypes_list[1,j]]*x[genotypes_list[2,j]])
+    free(pop);
+    pop = (int *) malloc(len_a*sizeof(int));
+    double *probs = (double *) malloc(len_a*sizeof(double));
+    for(int i=0; i<len_a; i++){
+      probs[i] = wx[i]/wbar;
+    }
+    double *probs_accum = (double *) malloc(len_a*sizeof(double));
+    probs_accum[0] = probs[0];
+    for(int i=1; i<5; i++){
+      probs_accum[i] = probs[i] + probs_accum[i-1];
+    }
+    for(int i=0; i<N; i++){
+      seed -= 1;
+      if(ran1(&seed)<probs_accum[0]){
+        pop[0] += 1;
       } else {
-        x_square = c(x_square, 2*x[genotypes_list[1,j]]*x[genotypes_list[2,j]])
+        for(int j=1; j<5; j++){
+          if(ran1(&seed)<probs_accum[j] && ran1(&seed)>probs_accum[j-1]){
+            pop[j] += 1;
+          }
+        } 
       }
     }
-    wbar = sum(x_square*w)
-    pop = rmultinom(1, size=N, x_square/wbar*w) #stochastic reproduction
-    for(j in 1:length(x)){ #calculate allele frequencies for the next gen.
-      factor_sum = 0
-      for(i in 1:ncol(genotypes_list)){
-        if(any(genotypes_list[,i] == j)){
-          if(genotypes_list[1,i] == genotypes_list[2,i]){
-            factor_sum = factor_sum + pop[i]
+    free(probs);
+    free(probs_accum);
+    double factor_sum;
+    for(int j=1; j<=len_all_exp; j++){
+      factor_sum = 0;
+      for(int i=0; i<len_a; i++){
+        if(genotypes_list[0][i] ==j || genotypes_list[1][i] ==j){
+          if(genotypes_list[1][i] == genotypes_list[0][i]){
+            factor_sum += pop[i];
           } else {
-            factor_sum = factor_sum + pop[i]/2
+            factor_sum += pop[i]/2;
           }
         }
       }
-      x[j] = factor_sum/N
+      x[j] = factor_sum/N;
     }
-    freq = cbind(freq,x) # update freq
+    for(int i=0; i<len_all_exp; i++){
+      fprintf(fPonter,"%f,",x[i]);
+    }
+    fprintf("\n");
   }
-*/
+  fclose(fPointer);
+}
+
 
 #define IA 16807
 #define IM 2147483647
