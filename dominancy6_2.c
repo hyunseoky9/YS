@@ -45,7 +45,6 @@ int main(){
   x[0] = 1.0; //frequency of alleles
   int *pop = (int *) malloc(sizeof(double));
   pop[0] = N; //array of population of genotypes
-  //WRITE FILES FOR FREQ
   int t = 1; // generation amount
   int change = 5; //generation amount after a season change.
   double u1 = 0.333;
@@ -83,7 +82,7 @@ int main(){
   //CHECK: IF MEMCPY FROM W2 OR W1 TO W WORKS PROPERLY
   for(int time=0; time<t; time++){
   	if(time%change == 1 && time>1){ //change season after specified generation time
-  	  if(w[0] == w[1]){
+  	  if(w[0] == w1[0]){
   	  	free(w);
   	    memcpy(w,w2,len_a*sizeof(double));
   	  } else {
@@ -93,6 +92,11 @@ int main(){
   	}
     seed -= 1;
     float arise = ran1(&seed);
+    printf("w before mut: ");
+    for(int i=0; i<len_a;i++){
+      printf("%f ", w[i]);
+    }
+    printf("\n");
     //assumption: mutation arises only once per generation
     //protocol for when mutation arises
     if (arise < mu){ // algorithm for new mutation arising
@@ -105,7 +109,7 @@ int main(){
         }
 	    }
       seed -= 1;
-      int select_mutant = positive_pop_index[(int)floor(ran1(&seed)*(j+1))]; //select the genotype index that will mutate out of the genotypes with positive counts
+      int select_mutant = positive_pop_index[(int)floor(ran1(&seed)*j)]; //select the genotype index that will mutate out of the genotypes with positive counts
       int mutant_arisen_genotype[2] = {genotypes_list[0][select_mutant],genotypes_list[1][select_mutant]}; //genotypes_list
       printf("mutant_arisen_genotype: %d %d\n",mutant_arisen_genotype[0],mutant_arisen_genotype[1]);
       seed -= 1;
@@ -120,8 +124,11 @@ int main(){
       }
       len_all_exp += 1; //length of allele expressions increased by 1
       all_exp[len_all_exp-1] = new_exp;
-      printf("all_exp: %f %f %f\n",all_exp[0],all_exp[1],all_exp[2]);
-      int num = intsum(len_all_exp,intseq(1,len_all_exp,1));
+      //printf("all_exp: %f %f %f\n",all_exp[0],all_exp[1],all_exp[2]);
+      int *sequence = intseq(1,len_all_exp,1);
+      int num = intsum(len_all_exp, sequence);
+      free(sequence);
+      printf("num: %d\n",num);
 			for(int i=0; i<len_a; i++){
 				free(genotypes_list[i]);
 			}
@@ -143,18 +150,18 @@ int main(){
 				}
 			}
 			printf("a:");
-			for(int i=0; i<num; i++){
-				printf("%f",a[i]);
+			for(int i=0; i<len_a; i++){
+				printf("%f ",a[i]);
 			}
 			printf("\n");
 			printf("genotypes list:\n");
-			for(int i=0; i<num; i++){
+			for(int i=0; i<len_a; i++){
 				for(int j=0; j<2; j++){
 					printf("%d",genotypes_list[j][i]);
 				}
 				printf("\n");
 			}
-			if(w[0] == w[1]){
+			if(w[0] == w1[0]){
 				free(w1);
 				free(w2);
 				free(w);
@@ -176,54 +183,82 @@ int main(){
 				for(int i=0; i<len_a; i++){
 					w1[i] = dnorm(a[i],u1,sig)/dnorm(u1,u1,sig);
 					w2[i] = dnorm(a[i],u2,sig)/dnorm(u2,u2,sig);
+          printf("\n");
 				}
 				memcpy(w,w1,len_a*sizeof(double));
 			}
+      printf("w: ");
+      for(int i=0; i<len_a; i++){
+        printf("%f ",w[i]);
+      }
+      printf("\n");
 			x = (double *) realloc(x,len_all_exp*sizeof(double));
 			x[arise_from-1] = x[arise_from-1] - (double)1/(2*N);
 			x[len_all_exp-1] = (double)1/(2*N);
-			printf("x: %f %f\n",x[0], x[1]);
-			for(int i=0; i<len_a; i++){
-				printf("pop[%d]= %d", i, pop[i]);
-			}
+      printf("x: ");
+      for(int i=0; i<len_all_exp;i++){
+        printf("%f ",x[i]);
+      }
+      printf("\n");
 			free(positive_pop_index);
     }
     double *x_square = (double *) malloc(len_a*sizeof(double));
     for(int i=0; i<len_a; i++){ //get all the factors when x is squared
     	if(genotypes_list[0][i] == genotypes_list[1][i]){
-    		x_square[i] = x[genotypes_list[0][i]]*x[genotypes_list[1][i]];
+    		x_square[i] = x[genotypes_list[0][i]-1]*x[genotypes_list[1][i]-1];
     	} else {
-    		x_square[i] = 2*x[genotypes_list[0][i]]*x[genotypes_list[1][i]];
+    		x_square[i] = 2*x[genotypes_list[0][i]-1]*x[genotypes_list[1][i]-1];
     	}
     }
     double *wx = (double *) malloc(len_a*sizeof(double));
     for(int i=0; i<len_a; i++){
     	wx[i] = w[i]*x_square[i];
     }
+    free(x_square);
     double wbar = doublesum(len_a,wx);
+    printf("pop[0]old: %d\n",pop[0]);
     free(pop);
     pop = (int *) malloc(len_a*sizeof(int));
+    printf("len_a: %d\n",len_a);
+    printf("pop[0]: %d\n", pop[0]);
+    printf("pop[0] address: %d\n", &pop[0]);
     double *probs = (double *) malloc(len_a*sizeof(double));
     for(int i=0; i<len_a; i++){
       probs[i] = wx[i]/wbar;
     }
+    free(wx);
+    printf("probs: ");
+    for(int i=0; i<len_a; i++){
+      printf("%f ",probs[i]);
+    }
+    printf("\n");
     double *probs_accum = (double *) malloc(len_a*sizeof(double));
     probs_accum[0] = probs[0];
-    for(int i=1; i<5; i++){
+    for(int i=1; i<len_a; i++){
       probs_accum[i] = probs[i] + probs_accum[i-1];
     }
+    printf("probs_accum: ");
+    for(int i=0; i<len_a; i++){
+      printf("%f ",probs_accum[i]);
+    }
+    printf("\n"); 
     for(int i=0; i<N; i++){
       seed -= 1;
       if(ran1(&seed)<probs_accum[0]){
         pop[0] += 1;
       } else {
-        for(int j=1; j<5; j++){
+        for(int j=1; j<len_a; j++){
           if(ran1(&seed)<probs_accum[j] && ran1(&seed)>probs_accum[j-1]){
             pop[j] += 1;
           }
         } 
       }
     }
+    printf("pop: ");
+    for(int i=0; i<len_a; i++){
+      printf("%d ",pop[i]);
+    }
+    printf("\n");
     free(probs);
     free(probs_accum);
     double factor_sum;
@@ -238,13 +273,29 @@ int main(){
           }
         }
       }
-      x[j] = factor_sum/N;
+      x[j-1] = factor_sum/N;
     }
+    printf("x: ");
     for(int i=0; i<len_all_exp; i++){
-      fprintf(fPonter,"%f,",x[i]);
+      printf("%f ",x[i]);
     }
-    fprintf("\n");
+    printf("\n");
+    for(int i=0; i<len_all_exp; i++){
+      fprintf(fPointer,"%.3f,",x[i]);
+    }
+    fprintf(fPointer,"\n");
   }
+  free(x);
+  free(pop);
+  free(all_exp);
+  free(a);
+  for(int i=0; i<2; i++){
+    free(genotypes_list[i]);
+  }
+  free(genotypes_list);
+  free(w1);
+  free(w2);
+  free(w);
   fclose(fPointer);
 }
 
