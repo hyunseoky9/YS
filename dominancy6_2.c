@@ -40,12 +40,12 @@ int main(){
   FILE * fPointer;
   fPointer = fopen("result.csv","w");
   int N = 100; //population
-  double mu = 1; //mutation rate
+  double mu = 0.5; //mutation rate
   double *x = (double *) malloc(sizeof(double));
   x[0] = 1.0; //frequency of alleles
   int *pop = (int *) malloc(sizeof(int));
   pop[0] = N; //array of population of genotypes
-  int t = 2; // generation amount
+  int t = 11; // generation amount
   int change = 5; //generation amount after a season change.
   double u1 = 0.333;
   double u2 = 0.666;
@@ -72,22 +72,17 @@ int main(){
   }
   double *w = (double *) malloc(len_a*sizeof(double));
   memcpy(w,w1,len_a*sizeof(double));
-
-  /*printf("a1 %f\n",a1);
-  printf("all_exp %f\n",all_exp[0]);
-  printf("a %f\n",a[0]);
-  printf("genotypes_list %d%d\n",genotypes_list[0][0],genotypes_list[1][0]);
-  printf("w1 %f\n",w1[0]);
-  printf("w2 %f\n",w2[0]);
-  printf("w %f\n",w[0]);*/
   //CHECK: IF MEMCPY FROM W2 OR W1 TO W WORKS PROPERLY
   for(int time=0; time<t; time++){
     printf("\n\n\n -----------------------time=%d------------------------\n\n",time);
   	if((time+1)%change == 1 && (time+1)>1){ //change season after specified generation time
+      printf("TIME TO CHANGEEEEE\n");
   	  if(w[0] == w1[0]){
+        printf("CHANGE BACK TO SEASON2\n");
   	  	free(w);
   	    memcpy(w,w2,len_a*sizeof(double));
   	  } else {
+        printf("CHANGE BACK TO SEASON1\n");
   	  	free(w);
   	    memcpy(w,w1,len_a*sizeof(double));
   	  }
@@ -132,14 +127,14 @@ int main(){
       int num = intsum(len_all_exp, sequence);
       free(sequence);
       printf("num: %d\n",num);
-			for(int i=0; i<len_a; i++){
+			for(int i=0; i<2; i++){
 				free(genotypes_list[i]);
 			}
 			free(genotypes_list);
 			free(a);
 			a = (double *) malloc(num*sizeof(double));
 			genotypes_list = (int **) malloc(2*sizeof(int *));
-			for(int i=0; i<num; i++){
+			for(int i=0; i<2; i++){
 				genotypes_list[i] = (int *) malloc(num*sizeof(int));
 			}
 			int k=0;
@@ -165,6 +160,7 @@ int main(){
 				printf("\n");
 			}
       if(w[0] == w1[0]){
+        printf("W IS W1\n");
         free(w1);
 				free(w2);
 				free(w);
@@ -177,6 +173,7 @@ int main(){
 				}
 				memcpy(w,w1,len_a*sizeof(double));
 			} else {
+        printf("W IS W2\n");
 				free(w1);
 				free(w2);
 				free(w);
@@ -291,10 +288,10 @@ int main(){
   free(pop);
   free(all_exp);
   free(a);
-  /*for(int i=0; i<2; i++){
+  for(int i=0; i<2; i++){
     free(genotypes_list[i]);
-  }*/
-  //free(genotypes_list);
+  }
+  free(genotypes_list);
   free(w1);
   free(w2);
   free(w);
