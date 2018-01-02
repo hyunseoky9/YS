@@ -43,9 +43,9 @@ int main(){
   double mu = 1; //mutation rate
   double *x = (double *) malloc(sizeof(double));
   x[0] = 1.0; //frequency of alleles
-  int *pop = (int *) malloc(sizeof(double));
+  int *pop = (int *) malloc(sizeof(int));
   pop[0] = N; //array of population of genotypes
-  int t = 1; // generation amount
+  int t = ; // generation amount
   int change = 5; //generation amount after a season change.
   double u1 = 0.333;
   double u2 = 0.666;
@@ -72,6 +72,7 @@ int main(){
   }
   double *w = (double *) malloc(len_a*sizeof(double));
   memcpy(w,w1,len_a*sizeof(double));
+
   /*printf("a1 %f\n",a1);
   printf("all_exp %f\n",all_exp[0]);
   printf("a %f\n",a[0]);
@@ -81,7 +82,7 @@ int main(){
   printf("w %f\n",w[0]);*/
   //CHECK: IF MEMCPY FROM W2 OR W1 TO W WORKS PROPERLY
   for(int time=0; time<t; time++){
-  	if(time%change == 1 && time>1){ //change season after specified generation time
+  	if((time+1)%change == 1 && (time+1)>1){ //change season after specified generation time
   	  if(w[0] == w1[0]){
   	  	free(w);
   	    memcpy(w,w2,len_a*sizeof(double));
@@ -97,10 +98,11 @@ int main(){
       printf("%f ", w[i]);
     }
     printf("\n");
+
     //assumption: mutation arises only once per generation
     //protocol for when mutation arises
     if (arise < mu){ // algorithm for new mutation arising
-      int *positive_pop_index = (int *) malloc(sizeof(int)*len_a); //select genotypes that have counts
+      int *positive_pop_index = (int *) malloc(len_a*sizeof(int)); //select genotypes that have counts
       int j = 0;
       for(int i=0; i<len_a; i++){
         if(pop[i] > 0){
@@ -161,7 +163,7 @@ int main(){
 				}
 				printf("\n");
 			}
-			if(w[0] == w1[0]){
+      if(w[0] == w1[0]){
 				free(w1);
 				free(w2);
 				free(w);
@@ -183,16 +185,15 @@ int main(){
 				for(int i=0; i<len_a; i++){
 					w1[i] = dnorm(a[i],u1,sig)/dnorm(u1,u1,sig);
 					w2[i] = dnorm(a[i],u2,sig)/dnorm(u2,u2,sig);
-          printf("\n");
 				}
-				memcpy(w,w1,len_a*sizeof(double));
+				memcpy(w,w2,len_a*sizeof(double));
 			}
       printf("w: ");
       for(int i=0; i<len_a; i++){
         printf("%f ",w[i]);
       }
       printf("\n");
-			x = (double *) realloc(x,len_all_exp*sizeof(double));
+			x = (double *) realloc(x, len_all_exp*sizeof(double));
 			x[arise_from-1] = x[arise_from-1] - (double)1/(2*N);
 			x[len_all_exp-1] = (double)1/(2*N);
       printf("x: ");
@@ -200,8 +201,22 @@ int main(){
         printf("%f ",x[i]);
       }
       printf("\n");
-			free(positive_pop_index);
+
+      printf("pop[0]old: %d\n",pop[0]);
+      free(pop);
+      printf("pop after free: %d\n", pop[0]);
+      pop = (int *) malloc(sizeof(int));
+      pop[0] = N; //array of population of genotypes
+
+			//free(positive_pop_index);
+
+      printf("pop[0]old: %d\n",pop[0]);
+      free(pop);
+      printf("pop after free: %d\n", pop[0]);
+      pop = (int *) malloc(sizeof(int));
+      pop[0] = N; //array of population of genotypes
     }
+
     double *x_square = (double *) malloc(len_a*sizeof(double));
     for(int i=0; i<len_a; i++){ //get all the factors when x is squared
     	if(genotypes_list[0][i] == genotypes_list[1][i]){
@@ -214,13 +229,28 @@ int main(){
     for(int i=0; i<len_a; i++){
     	wx[i] = w[i]*x_square[i];
     }
-    free(x_square);
+
+    printf("pop[0]old: %d\n",pop[0]); 
+    free(pop);
+    printf("pop after free: %d\n", pop[0]);
+    pop = (int *) malloc(sizeof(int));
+    pop[0] = N; //array of population of genotypes
+
+    //  free(x_square);
+
+    printf("pop[0]old: %d\n",pop[0]);
+    free(pop);
+    printf("pop after free: %d\n", pop[0]);
+    pop = (int *) malloc(sizeof(int));
+    pop[0] = N; //array of population of genotypes
+
     double wbar = doublesum(len_a,wx);
     printf("pop[0]old: %d\n",pop[0]);
     free(pop);
+    printf("pop after free: %d\n", pop[0]);
     pop = (int *) malloc(len_a*sizeof(int));
     printf("len_a: %d\n",len_a);
-    printf("pop[0]: %d\n", pop[0]);
+    printf("pop: %d %d %d\n", pop[0], pop[1], pop[2]);
     printf("pop[0] address: %d\n", &pop[0]);
     double *probs = (double *) malloc(len_a*sizeof(double));
     for(int i=0; i<len_a; i++){
@@ -251,7 +281,7 @@ int main(){
           if(ran1(&seed)<probs_accum[j] && ran1(&seed)>probs_accum[j-1]){
             pop[j] += 1;
           }
-        } 
+        }
       }
     }
     printf("pop: ");
