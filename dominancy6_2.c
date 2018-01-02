@@ -45,7 +45,7 @@ int main(){
   x[0] = 1.0; //frequency of alleles
   int *pop = (int *) malloc(sizeof(int));
   pop[0] = N; //array of population of genotypes
-  int t = ; // generation amount
+  int t = 2; // generation amount
   int change = 5; //generation amount after a season change.
   double u1 = 0.333;
   double u2 = 0.666;
@@ -82,6 +82,7 @@ int main(){
   printf("w %f\n",w[0]);*/
   //CHECK: IF MEMCPY FROM W2 OR W1 TO W WORKS PROPERLY
   for(int time=0; time<t; time++){
+    printf("\n\n\n -----------------------time=%d------------------------\n\n",time);
   	if((time+1)%change == 1 && (time+1)>1){ //change season after specified generation time
   	  if(w[0] == w1[0]){
   	  	free(w);
@@ -164,7 +165,7 @@ int main(){
 				printf("\n");
 			}
       if(w[0] == w1[0]){
-				free(w1);
+        free(w1);
 				free(w2);
 				free(w);
 				w1 = (double *) malloc(len_a*sizeof(double));
@@ -201,20 +202,7 @@ int main(){
         printf("%f ",x[i]);
       }
       printf("\n");
-
-      printf("pop[0]old: %d\n",pop[0]);
-      free(pop);
-      printf("pop after free: %d\n", pop[0]);
-      pop = (int *) malloc(sizeof(int));
-      pop[0] = N; //array of population of genotypes
-
-			//free(positive_pop_index);
-
-      printf("pop[0]old: %d\n",pop[0]);
-      free(pop);
-      printf("pop after free: %d\n", pop[0]);
-      pop = (int *) malloc(sizeof(int));
-      pop[0] = N; //array of population of genotypes
+			free(positive_pop_index);
     }
 
     double *x_square = (double *) malloc(len_a*sizeof(double));
@@ -229,29 +217,13 @@ int main(){
     for(int i=0; i<len_a; i++){
     	wx[i] = w[i]*x_square[i];
     }
-
-    printf("pop[0]old: %d\n",pop[0]); 
-    free(pop);
-    printf("pop after free: %d\n", pop[0]);
-    pop = (int *) malloc(sizeof(int));
-    pop[0] = N; //array of population of genotypes
-
-    //  free(x_square);
-
-    printf("pop[0]old: %d\n",pop[0]);
-    free(pop);
-    printf("pop after free: %d\n", pop[0]);
-    pop = (int *) malloc(sizeof(int));
-    pop[0] = N; //array of population of genotypes
-
+    free(x_square);
     double wbar = doublesum(len_a,wx);
-    printf("pop[0]old: %d\n",pop[0]);
     free(pop);
-    printf("pop after free: %d\n", pop[0]);
     pop = (int *) malloc(len_a*sizeof(int));
-    printf("len_a: %d\n",len_a);
-    printf("pop: %d %d %d\n", pop[0], pop[1], pop[2]);
-    printf("pop[0] address: %d\n", &pop[0]);
+    for(int i=0; i<len_a; i++){
+      pop[i] = 0;
+    }
     double *probs = (double *) malloc(len_a*sizeof(double));
     for(int i=0; i<len_a; i++){
       probs[i] = wx[i]/wbar;
@@ -319,10 +291,10 @@ int main(){
   free(pop);
   free(all_exp);
   free(a);
-  for(int i=0; i<2; i++){
+  /*for(int i=0; i<2; i++){
     free(genotypes_list[i]);
-  }
-  free(genotypes_list);
+  }*/
+  //free(genotypes_list);
   free(w1);
   free(w2);
   free(w);

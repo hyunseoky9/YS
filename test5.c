@@ -5,22 +5,14 @@
 #define _USE_MATH_DEFINES
 
 int main() {
-	for(int i=0; i<4; i++){
-		double *x = (double *) malloc(sizeof(double));
-		x[0] = 0.1;
-		x = (double *) realloc(x,2*sizeof(double));
-		free(x);
-		printf("yep");
-	}
-	/*a = (int **) malloc(2*sizeof(int *));
-	for(int i=0; i<2; i++){
-		a[i] = (int *) malloc(2*sizeof(int));
-	}*/
-
-	/*for(int i=0; i<2; i++){
-		free(a[i]); 
-	}
-	free(a);*/
-
+	int *a = (int *) malloc(sizeof(int));
+	int *b = (int *) malloc(sizeof(int));
+	a[0] = 2;
+	b[0] = 2;
+	//free(a);
+	//free(a);
+	free(a);
+	free(b);
+	printf("%d", b[0]);
 	return 0;
 }
