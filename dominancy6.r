@@ -29,7 +29,7 @@ for(n in 1:10){
   N = 100
   mu = 0.001
   x = c(1) #frequency of alleles
-  pop = matrix(c(N),ncol=1,nrow=1) #array of population of genotypes
+  pop = c(N) #array of population of genotypes
   freq = matrix(x,ncol=1,nrow=1)
   t = 5000 # generation amount
   switch = 5 #generation amount after a season change.
@@ -60,7 +60,7 @@ for(n in 1:10){
       mutant_arisen_genotype = genotypes_list[,select_mutant]
       arise_from = mutant_arisen_genotype[ceiling(runif(1)*length(mutant_arisen_genotype))] #allele number that the mutation arose from
       other_allele = mutant_arisen_genotype[which(mutant_arisen_genotype != arise_from)]
-      mutant_genotype = sort(c(length(x)+1,other_allele))
+      mutant_genotype = c(other_allele,length(x)+1)
       d_new = runif(1,-0.5,0.5) # new mutation expression dist.
       new_exp = all_exp[arise_from]+d_new
       if (new_exp<0){

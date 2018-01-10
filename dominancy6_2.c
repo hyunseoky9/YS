@@ -13,18 +13,12 @@ element through WF model simulation.*/
 #define _USE_MATH_DEFINES
 
 float ran1(long *seed);
-<<<<<<< HEAD
-int genotype2index(int geno[],int al_num);
-
-int main(){
-	int survivors[] = 
-=======
 int intmax(int argc, int array[]);
 int intmin(int argc,int array[]);
 int intsum(int length, int array[]);
 int *intseq(int init,int end, int inter);
 double dnorm(double x, double mu, double sig);
-double doublesum(int size; double a[]);
+double doublesum(int size, double a[]);
 
 int genotype2index(int genotype[],int new_al_num){
   int index;
@@ -43,15 +37,15 @@ int genotype2index(int genotype[],int new_al_num){
   return index;
 }
 int main(){
-
+  FILE * fPointer;
+  fPointer = fopen("result.csv","w");
   int N = 100; //population
-  double mu = 1; //mutation rate
+  double mu = 0.5; //mutation rate
   double *x = (double *) malloc(sizeof(double));
   x[0] = 1.0; //frequency of alleles
-  int *pop = (int *) malloc(sizeof(double));
+  int *pop = (int *) malloc(sizeof(int));
   pop[0] = N; //array of population of genotypes
-  //WRITE FILES FOR FREQ
-  int t = 1; // generation amount
+  int t = 11; // generation amount
   int change = 5; //generation amount after a season change.
   double u1 = 0.333;
   double u2 = 0.666;
@@ -78,30 +72,33 @@ int main(){
   }
   double *w = (double *) malloc(len_a*sizeof(double));
   memcpy(w,w1,len_a*sizeof(double));
-  /*printf("a1 %f\n",a1);
-  printf("all_exp %f\n",all_exp[0]);
-  printf("a %f\n",a[0]);
-  printf("genotypes_list %d%d\n",genotypes_list[0][0],genotypes_list[1][0]);
-  printf("w1 %f\n",w1[0]);
-  printf("w2 %f\n",w2[0]);
-  printf("w %f\n",w[0]);*/
   //CHECK: IF MEMCPY FROM W2 OR W1 TO W WORKS PROPERLY
   for(int time=0; time<t; time++){
-  	if(time%change == 1 && time>1){ //change season after specified generation time
-  	  if(w[0] == w[1]){
+    printf("\n\n\n -----------------------time=%d------------------------\n\n",time);
+  	if((time+1)%change == 1 && (time+1)>1){ //change season after specified generation time
+      printf("TIME TO CHANGEEEEE\n");
+  	  if(w[0] == w1[0]){
+        printf("CHANGE BACK TO SEASON2\n");
   	  	free(w);
   	    memcpy(w,w2,len_a*sizeof(double));
   	  } else {
+        printf("CHANGE BACK TO SEASON1\n");
   	  	free(w);
   	    memcpy(w,w1,len_a*sizeof(double));
   	  }
   	}
     seed -= 1;
     float arise = ran1(&seed);
+    printf("w before mut: ");
+    for(int i=0; i<len_a;i++){
+      printf("%f ", w[i]);
+    }
+    printf("\n");
+
     //assumption: mutation arises only once per generation
     //protocol for when mutation arises
     if (arise < mu){ // algorithm for new mutation arising
-      int *positive_pop_index = (int *) malloc(sizeof(int)*len_a); //select genotypes that have counts
+      int *positive_pop_index = (int *) malloc(len_a*sizeof(int)); //select genotypes that have counts
       int j = 0;
       for(int i=0; i<len_a; i++){
         if(pop[i] > 0){
@@ -110,21 +107,12 @@ int main(){
         }
 	    }
       seed -= 1;
-      int select_mutant = positive_pop_index[(int)floor(ran1(&seed)*(j+1))]; //select the genotype index that will mutate out of the genotypes with positive counts
+      int select_mutant = positive_pop_index[(int)floor(ran1(&seed)*j)]; //select the genotype index that will mutate out of the genotypes with positive counts
       int mutant_arisen_genotype[2] = {genotypes_list[0][select_mutant],genotypes_list[1][select_mutant]}; //genotypes_list
       printf("mutant_arisen_genotype: %d %d\n",mutant_arisen_genotype[0],mutant_arisen_genotype[1]);
       seed -= 1;
       int one = (int)floor(ran1(&seed)*2);
-      int other;
-      if(one == 1){
-      	other = 0;
-      } else {
-      	other = 1;
-      }
       int arise_from = mutant_arisen_genotype[one]; //allele number that the mutation arose from
-      int other_allele = mutant_arisen_genotype[other]; //allele that is paired with the mutant allele
-      int mutant_genotype[2] = {other_allele, len_all_exp+1}; //genotype of a mutant
-      printf("mutant_genotype: %d %d\n", mutant_genotype[0], mutant_genotype[1]);
       seed -= 1;
       double d_new = ran1(&seed)-0.5; //new allele's expression dist from the original state
       double new_exp = all_exp[arise_from-1] + d_new; //new mutation expression level
@@ -134,55 +122,19 @@ int main(){
       }
       len_all_exp += 1; //length of allele expressions increased by 1
       all_exp[len_all_exp-1] = new_exp;
-      printf("all_exp: %f %f %f\n",all_exp[0],all_exp[1],all_exp[2]);
-      int num = intsum(len_all_exp,intseq(1,len_all_exp,1));
-      printf("newpop's num: %d\n",num);
-      int *newpop = (int *) malloc(num*sizeof(int));
-      j = 0;
-      int *tempop = (int *) malloc((len_a)*sizeof(int));
-			int len_tempop = len_a;
-			memcpy(tempop,pop,len_a*sizeof(int));
-			for(int i=0; i<len_a;i++){
-				printf("tempop[%d]: %d\n", i, tempop[i]);
-			}
-			for(int i=(len_all_exp-1); i>0; i--){ //put pop in a newpop where indexing is different.
-      	for(int k=0;k<i;k++){
-      		newpop[j+k] = tempop[k];
-        }
-        int *temp = (int *) malloc((len_tempop-i)*sizeof(int));
-        //printf("temp: %d\n",temp[0]);
-        int l = 0;
-        for(int k=i;k<len_tempop;k++){
-        	temp[l] = tempop[k];
-        	l += 1;
-        	//printf("temp: %d\n",temp[0]);
-        	//printf("k is %d\n",k);
-        }
-        len_tempop = l;
-        free(tempop);
-        tempop = (int *) malloc(len_tempop*sizeof(int));        
-        if(l>0){
-        	memcpy(tempop, temp, len_tempop*sizeof(int));
-    		}
-    		free(temp);
-    	//printf("tempop: %d %d %d %d %d %d\n",tempop[0],tempop[1],tempop[2],tempop[3],tempop[4],tempop[5]);
-	  		j = j + (i-1) +2;
-			}
-			for(int i=0; i<num; i++){
-				printf("newpop[%d]: %d\n", i, newpop[i]);
-			}
-			//find index of the mutant genotypes in the newpop
-			int from_index = genotype2index(mutant_arisen_genotype, len_all_exp);
-			printf("from_index: %d\n",from_index);
-			int to_index = genotype2index(mutant_genotype, len_all_exp);
-			for(int i=0; i<len_a; i++){
+      //printf("all_exp: %f %f %f\n",all_exp[0],all_exp[1],all_exp[2]);
+      int *sequence = intseq(1,len_all_exp,1);
+      int num = intsum(len_all_exp, sequence);
+      free(sequence);
+      printf("num: %d\n",num);
+			for(int i=0; i<2; i++){
 				free(genotypes_list[i]);
 			}
 			free(genotypes_list);
 			free(a);
 			a = (double *) malloc(num*sizeof(double));
 			genotypes_list = (int **) malloc(2*sizeof(int *));
-			for(int i=0; i<num; i++){
+			for(int i=0; i<2; i++){
 				genotypes_list[i] = (int *) malloc(num*sizeof(int));
 			}
 			int k=0;
@@ -196,22 +148,20 @@ int main(){
 				}
 			}
 			printf("a:");
-			for(int i=0; i<num; i++){
-				printf("%f",a[i]);
+			for(int i=0; i<len_a; i++){
+				printf("%f ",a[i]);
 			}
 			printf("\n");
 			printf("genotypes list:\n");
-			for(int i=0; i<num; i++){
+			for(int i=0; i<len_a; i++){
 				for(int j=0; j<2; j++){
 					printf("%d",genotypes_list[j][i]);
 				}
 				printf("\n");
 			}
-			//add mutation to the newpop
-			newpop[from_index] -= 1;
-			newpop[to_index] += 1;
-			if(w[0] == w[1]){
-				free(w1);
+      if(w[0] == w1[0]){
+        printf("W IS W1\n");
+        free(w1);
 				free(w2);
 				free(w);
 				w1 = (double *) malloc(len_a*sizeof(double));
@@ -223,6 +173,7 @@ int main(){
 				}
 				memcpy(w,w1,len_a*sizeof(double));
 			} else {
+        printf("W IS W2\n");
 				free(w1);
 				free(w2);
 				free(w);
@@ -233,63 +184,120 @@ int main(){
 					w1[i] = dnorm(a[i],u1,sig)/dnorm(u1,u1,sig);
 					w2[i] = dnorm(a[i],u2,sig)/dnorm(u2,u2,sig);
 				}
-				memcpy(w,w1,len_a*sizeof(double));
+				memcpy(w,w2,len_a*sizeof(double));
 			}
-			free(pop);
-			pop = (int *) malloc(len_a*sizeof(int));
-			memcpy(pop,newpop,len_a*sizeof(int));
-			x = (double *) realloc(x,len_all_exp*sizeof(double));
+      printf("w: ");
+      for(int i=0; i<len_a; i++){
+        printf("%f ",w[i]);
+      }
+      printf("\n");
+			x = (double *) realloc(x, len_all_exp*sizeof(double));
 			x[arise_from-1] = x[arise_from-1] - (double)1/(2*N);
 			x[len_all_exp-1] = (double)1/(2*N);
-			printf("x: %f %f\n",x[0], x[1]);
-			for(int i=0; i<len_a; i++){
-				printf("pop[%d]= %d", i, pop[i]);
-			}
+      printf("x: ");
+      for(int i=0; i<len_all_exp;i++){
+        printf("%f ",x[i]);
+      }
+      printf("\n");
 			free(positive_pop_index);
     }
+
     double *x_square = (double *) malloc(len_a*sizeof(double));
     for(int i=0; i<len_a; i++){ //get all the factors when x is squared
     	if(genotypes_list[0][i] == genotypes_list[1][i]){
-    		x_square[i] = x[genotypes_list[0][i]]*x[genotypes_list[1][i]];
+    		x_square[i] = x[genotypes_list[0][i]-1]*x[genotypes_list[1][i]-1];
     	} else {
-    		x_square[i] = 2*x[genotypes_list[0][i]]*x[genotypes_list[1][i]];
+    		x_square[i] = 2*x[genotypes_list[0][i]-1]*x[genotypes_list[1][i]-1];
     	}
     }
     double *wx = (double *) malloc(len_a*sizeof(double));
     for(int i=0; i<len_a; i++){
     	wx[i] = w[i]*x_square[i];
     }
-    double wbar = doublesum(wx);
-
-  }
-}
-
-x_square = c()
-    for(j in 1:ncol(genotypes_list)){ #get all the factors when x is squared
-      if(genotypes_list[1,j] == genotypes_list[2,j]){
-        x_square = c(x_square, x[genotypes_list[1,j]]*x[genotypes_list[2,j]])
-      } else {
-        x_square = c(x_square, 2*x[genotypes_list[1,j]]*x[genotypes_list[2,j]])
-      }
+    free(x_square);
+    double wbar = doublesum(len_a,wx);
+    free(pop);
+    pop = (int *) malloc(len_a*sizeof(int));
+    for(int i=0; i<len_a; i++){
+      pop[i] = 0;
     }
-    wbar = sum(x_square*w)
-    pop = rmultinom(1, size=N, x_square/wbar*w) #stochastic reproduction
-    for(j in 1:length(x)){ #calculate allele frequencies for the next gen.
-      factor_sum = 0
-      for(i in 1:ncol(genotypes_list)){
-        if(any(genotypes_list[,i] == j)){
-          if(genotypes_list[1,i] == genotypes_list[2,i]){
-            factor_sum = factor_sum + pop[i]
-          } else {
-            factor_sum = factor_sum + pop[i]/2
+    double *probs = (double *) malloc(len_a*sizeof(double));
+    for(int i=0; i<len_a; i++){
+      probs[i] = wx[i]/wbar;
+    }
+    free(wx);
+    printf("probs: ");
+    for(int i=0; i<len_a; i++){
+      printf("%f ",probs[i]);
+    }
+    printf("\n");
+    double *probs_accum = (double *) malloc(len_a*sizeof(double));
+    probs_accum[0] = probs[0];
+    for(int i=1; i<len_a; i++){
+      probs_accum[i] = probs[i] + probs_accum[i-1];
+    }
+    printf("probs_accum: ");
+    for(int i=0; i<len_a; i++){
+      printf("%f ",probs_accum[i]);
+    }
+    printf("\n"); 
+    for(int i=0; i<N; i++){
+      seed -= 1;
+      if(ran1(&seed)<probs_accum[0]){
+        pop[0] += 1;
+      } else {
+        for(int j=1; j<len_a; j++){
+          if(ran1(&seed)<probs_accum[j] && ran1(&seed)>probs_accum[j-1]){
+            pop[j] += 1;
           }
         }
       }
-      x[j] = factor_sum/N
     }
-    freq = cbind(freq,x) # update freq
+    printf("pop: ");
+    for(int i=0; i<len_a; i++){
+      printf("%d ",pop[i]);
+    }
+    printf("\n");
+    free(probs);
+    free(probs_accum);
+    double factor_sum;
+    for(int j=1; j<=len_all_exp; j++){
+      factor_sum = 0;
+      for(int i=0; i<len_a; i++){
+        if(genotypes_list[0][i] ==j || genotypes_list[1][i] ==j){
+          if(genotypes_list[1][i] == genotypes_list[0][i]){
+            factor_sum += pop[i];
+          } else {
+            factor_sum += pop[i]/2;
+          }
+        }
+      }
+      x[j-1] = factor_sum/N;
+    }
+    printf("x: ");
+    for(int i=0; i<len_all_exp; i++){
+      printf("%f ",x[i]);
+    }
+    printf("\n");
+    for(int i=0; i<len_all_exp; i++){
+      fprintf(fPointer,"%.3f,",x[i]);
+    }
+    fprintf(fPointer,"\n");
   }
-*/
+  free(x);
+  free(pop);
+  free(all_exp);
+  free(a);
+  for(int i=0; i<2; i++){
+    free(genotypes_list[i]);
+  }
+  free(genotypes_list);
+  free(w1);
+  free(w2);
+  free(w);
+  fclose(fPointer);
+}
+
 
 #define IA 16807
 #define IM 2147483647
@@ -390,7 +398,6 @@ double dnorm(double x, double mu, double sig) {
   return y;
 }
 
-
 double doublesum(int size,double a[]){
   int i;
   float sum = 0;
@@ -398,5 +405,4 @@ double doublesum(int size,double a[]){
     sum += a[i];
   }
   return sum;
->>>>>>> cd0c4f0453c29487f8fd96770803734f671d4f13
 }
