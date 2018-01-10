@@ -10,3 +10,7 @@ element through WF model simulation.*/
 
 float ran1(long *seed);
 int genotype2index(int geno[],int al_num);
+
+int main(){
+	int survivors[] = 
+}

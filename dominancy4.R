@@ -10,7 +10,8 @@ rm(list=ls())
 survivors = list()
 means = c()
 coex_ratio = list()
-for(n in 1:500){
+n = 100
+for(trial in 1:n){
   x = c(499/500,1/500) #frequency
   freq = c(x)
   t = 1000 # generation amount
@@ -106,24 +107,47 @@ for(n in 1:500){
     x = new_x
     freq = cbind(freq,x)
   }
+    allele_label = c() # make allele labels
+  for( i in 1:ncol(alleles_list)){
+    label = sprintf('A%s%s',alleles_list[1,i],alleles_list[2,i])
+    allele_label = c(allele_label, label)
+  }
+  
+  #result output for a single instance
+  par(mfrow=c(2,3))
+  par(mar=c(2,2,2,2))
+  title = sprintf('bl=1,r=2,g=3 trial#=%d',trial)
+  time_line = 500:1000
+  plot(time_line,freq[1,time_line], ylim=c(0,1), type='l',main = title) #plot of frequency
+  lines(time_line,freq[2,time_line],type='l',col=2)
+  lines(time_line,freq[3,time_line],type='l',col=3)
+  ww = w1*w2
+  wamean = (w1+w2)/2
+  plot(ww, axes=FALSE, ylim=c(0,max(ww)), col=1) #plot of w1*w2
+  axis(2)
+  axis(1, at=seq_along(ww),labels=allele_label)
+  title('geometric mean')
+  plot(w1,main='w1')
+  plot(w2,main='w2')
+  plot(wamean, axes=FALSE, ylim=c(0,max(wamean)),col=1)
+  axis(2)
+  axis(1, at=seq_along(wamean),labels= allele_label)
+  title('arithmetic mean')
+
   avg = c()
   for( row in 1:nrow(freq)){
     avg = c(avg,mean(freq[row,(ncol(freq)-50):ncol(freq)]))
   }
   extinct = which(avg < 0.01)
   if (length(extinct)>0){
-    survivors[[n]] = c(1,2,3)[-extinct]
+    survivors[[trial]] = c(1,2,3)[-extinct]
   } else if (length(extinct)==0){
-    survivors[[n]] = c(1,2,3)
+    survivors[[trial]] = c(1,2,3)
     coex_ratio[[length(coex_ratio)+1]] = cbind(w1,w2,w1*w2)
   }
   means = cbind(means,w1*w2)
 }
-allele_label = c() # make allele labels
-for( i in 1:ncol(alleles_list)){
-  label = sprintf('A%s%s',alleles_list[1,i],alleles_list[2,i])
-  allele_label = c(allele_label, label)
-}
+
 topdog = c()
 for(col in 1:ncol(means)){
   top = alleles_list[,which(means[,col]==max(means[,col]))]
@@ -137,24 +161,8 @@ for(i in 1:length(survivors)){
    counts[survivors[[i]][j]] = counts[survivors[[i]][j]] + 1
   }
 }
+rownames(means) = allele_label
 ratios = counts/sum(counts)
 names(ratios)<-c(1,2,3)
 print(ratios)
-#result output for a single instance
-par(mfrow=c(2,2))
-par(mar=c(2,2,2,2))
-title = sprintf('bl=1,r=2,g=3')
-time_line = 500:600
-plot(time_line,freq[1,time_line], ylim=c(0,1), type='l',main = title) #plot of frequency
-lines(time_line,freq[2,time_line],type='l',col=2)
-lines(time_line,freq[3,time_line],type='l',col=3)
-
-rownames(means) = allele_label
-ww = w1*w2
-plot(ww, axes=FALSE, ylim=c(0,max(ww)), col=1) #plot of w1*w2
-axis(2)
-axis(1, at=seq_along(ww),labels=allele_label)
-title('geometric mean of two seasons (w1*w2)')
-plot(w1,main='w1')
-plot(w2,main='w2')
-print(ratios)
+print(survivors)
