@@ -10,7 +10,7 @@ rm(list=ls())
 survivors = list()
 means = c()
 coex_ratio = list()
-n = 1
+n = 100
 for(trial in 1:n){
   x = c(499/500,1/500) #frequency
   freq = c(x)
@@ -33,7 +33,7 @@ for(trial in 1:n){
   for(i in 1:new_mut){ #loooping time step
     if(i%%switch == 1 && i>1){ # change season after specified generation time
       if(s==1){
-        s=2 
+        s=2
         w = w2
       } else {
         s=1
@@ -162,7 +162,7 @@ for(i in 1:length(survivors)){
   }
 }
 rownames(means) = allele_label
-ratios = counts/sum(counts) # ratios of alleles surviving in all trials
+ratios = counts/sum(counts)
 names(ratios)<-c(1,2,3)
 print(ratios)
 print(survivors)
