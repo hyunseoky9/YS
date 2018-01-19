@@ -1,11 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
+int main(void)
+{
+    // This program will create same sequence of 
+    // random numbers on every program run 
+ 
+    for(int i = 0; i<5; i++)
+        printf(" %f ", (float)rand()/RAND_MAX);
 
-int main(){
-	FILE *ofp;
-	ofp = fopen("fuck it.txt","w");
-	fprintf(ofp,"Just joking, we don't\n");
-	fprintf(ofp,"new line\n");
-	fclose(ofp);
-	return 0;
-}
+    return 0;
+}	 	
