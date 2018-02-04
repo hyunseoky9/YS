@@ -5,14 +5,12 @@
 #define _USE_MATH_DEFINES
 
 int main() {
-	int *a = (int *) malloc(sizeof(int));
-	int *b = (int *) malloc(sizeof(int));
-	a[0] = 2;
-	b[0] = 2;
-	//free(a);
-	//free(a);
-	free(a);
-	free(b);
-	printf("%d", b[0]);
+	int a[20];
+	a[0] = 10;
+	printf("%d\n",a[0]);
+	int a[30];
+	a[0] = 20;
+	printf("%d\n",a[0]);
+	
 	return 0;
 }
