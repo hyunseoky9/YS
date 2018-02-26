@@ -849,7 +849,7 @@ float poidev(float xm, long *idum)
 			alxm = log(xm);
 			g = xm*alxm - gammln(xm+1.0);
 		}
-		do {
+			do {
 			do {
 					y = tan(PI*ran1(idum));
 					em = sq*y+xm;
