@@ -23,7 +23,7 @@ s = 0.05
 N0 = 1000
 K = 1000
 mu = 0.0007
-gen_num = 10
+gen_num = 500
 N = N0
 cost = 0
 r = 0.5
@@ -192,6 +192,7 @@ for gen in range(gen_num):
         viruses2[j].mutate(mu)
     viruses1, viruses2 = reproduce(viruses1,viruses2)
     N = len(viruses1) + len(viruses2)
+    print((len(viruses1),len(viruses2)))
     if len(viruses1)>0:
         for i in range(len(viruses1)):
             ks[0].append(viruses1[i].k)
