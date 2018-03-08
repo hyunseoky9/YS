@@ -17,7 +17,6 @@ import numpy as np
 import datetime
 import timeit
 from progress.bar import Bar
-import multiprocessing as mp
 
 rep = 1
 L = 300
@@ -26,6 +25,7 @@ N0 = 1000
 K = 1000
 mu = 0.0007
 gen_num = 500
+N = N0
 cost = 0
 r = 0.5
 
@@ -164,7 +164,16 @@ def reassort(v1, v2):
         
         return offspring1, offspring2
 
-def simulate():
+
+start = timeit.default_timer() # timer start
+bar = Bar('Processing', max=rep) # progress bar start
+# write out data with file name indicating time it started collecting
+now = datetime.datetime.now()
+file_name = './data/Influenza_multiple_%s.csv'%(now.strftime("%Y.%m.%d_%H:%M"))
+fh = open(file_name,'w')
+fh.write('rep,pop1,pop2,k1,k2\n')
+
+for repe in range(rep):
     # Initialize the virus population. Each subpopulation gets half the population.
     N = N0 # reinitialize N
     viruses1 = []
@@ -173,6 +182,9 @@ def simulate():
         viruses2.append(Virus([],0,2))
     for i in range(int(N/2)):
         viruses1.append(Virus([],0,1))
+
+    kmeans1 = []
+    kmeans2 = []
     # run the simulation
     for gen in range(gen_num):
         for i in range(len(viruses1)):
@@ -181,48 +193,53 @@ def simulate():
             viruses2[j].mutate(mu)
         viruses1, viruses2 = reproduce(viruses1,viruses2)
         N = len(viruses1) + len(viruses2)
+        # get kmean for each subpop
+        ks = [] # k's for each virus in a subpop
+        if len(viruses1)>0:
+            for i in range(len(viruses1)):
+                ks.append(viruses1[i].k)
+            k_means1 = np.mean(np.array(ks))
+        else:
+            k_means1 = -1
+        ks = []
+        if len(viruses2)>0:
+            for j in range(len(viruses2)):
+                ks.append(viruses2[j].k)
+            k_means2 = np.mean(np.array(ks))
+        else:
+            k_means2 = -1
+        kmeans1.append(k_means1)
+        kmeans2.append(k_means2)
+
 
     # get kmean for each subpop
-    ks = [] # k's for each virus in a subpop
-    if len(viruses1)>0:
-        for i in range(len(viruses1)):
-            ks.append(viruses1[i].k)
-        k_means1 = np.mean(np.array(ks))
-    else:
-        k_means1 = -1
-    ks = []
-    if len(viruses2)>0:
-        for j in range(len(viruses2)):
-            ks.append(viruses2[j].k)
-        k_means2 = np.mean(np.array(ks))
-    else:
-        k_means2 = -1
+    #ks = [] # k's for each virus in a subpop
+    #if len(viruses1)>0:
+    #    for i in range(len(viruses1)):
+    #        ks.append(viruses1[i].k)
+    #    k_means1 = np.mean(np.array(ks))
+    #else:
+    #    k_means1 = -1
+    #ks = []
+    #if len(viruses2)>0:
+    #    for j in range(len(viruses2)):
+    #        ks.append(viruses2[j].k)
+    #    k_means2 = np.mean(np.array(ks))
+    #else:
+    #    k_means2 = -1
 
-    fh.write('%d,%d,%.2f,%.2f\n'%(len(viruses1),len(viruses2),
-                                 k_means1, k_means2))
-    output.put('%d,%d,%.2f,%.2f\n'%(len(viruses1),len(viruses2),
-                                 k_means1, k_means2))
-
-# run the simulation parallel
-start = timeit.default_timer() # timer start
-# write out data with file name indicating time it started collecting
-now = datetime.datetime.now()
-file_name = './data/paral_%s.csv'%(now.strftime("%Y.%m.%d_%H:%M"))
-fh = open(file_name,'w')
-fh.write('pop1,pop2,k1,k2\n')
-
-output = mp.Queue()
-processes = [mp.Process(target=simulate, args=(1,output)) for x in range(rep)]
- Run processes
-for p in processes:
-    p.start()
-for p in processes: # Exit the completed processes
-    p.join()
-results = [output.get() for p in processes]
-for i in range(len(results)): # finish off and close stuff
-    print(results[i])
-
+    #fh.write('%d,%d,%d,%.2f,%.2f\n'%(repe+1,len(viruses1),len(viruses2),
+    #                             k_means1, k_means2)) 
+    bar.next()
 
 fh.close()
+
+import matplotlib.pyplot as plt
+plt.plot(kmeans1, label='1seg')
+plt.plot(kmeans2, label='2seg')
+plt.legend()
+plt.show()
+
 stop = timeit.default_timer()
 print('\nthe simulation ran for %.2f min'%((stop - start)/60))
+bar.finish()

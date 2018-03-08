@@ -1,21 +1,26 @@
-to make it efficient:
-np.where rid -> use index array? only use k to do all the mutation work. Pick a random number and if it's less or equal to k back mutation, otherwise increase mutation
+Todo:
+check if 1.2 follow f0 eq when there's no mutation for 1 segment and 2 segment
+- find a parameter setting where 2seg is winning
+	- try mutation from 0 to 0.0009 with 100reps
 
-keep k_means during the generation simulation instead of going through all the k... (only for comp.py, rest is ok i think?)
+- change starting ratio, when the params are set for 2seg winning.
+- write a py script for putting in multiple commands in terminal.
 
-terminate when either 1 subpop goes to 0
 
-try graphing k_means
+
+
+
+
 
 problem with parallel:
 somehow when running the generations, it's not running the same way as it was sequential....
 Gotta check where its wrong starting from the top of the script.
 
-things to check:
-np.random.poisson()
+-Let's see if it's different with 1.2 ver
 
+File nomenclature:
 
-checked:
-k_means in the beginnning
-progeny_n nothing wrong
-w_mean
+multi... comp model
+
+c1.2s_(params) -> c = comp, 1.2 = ver, s = stat
+param order: rep,L,s,N0,K,mu,gen_num,cost,r
