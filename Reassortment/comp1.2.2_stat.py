@@ -156,7 +156,7 @@ bar = Bar('Processing', max=rep) # progress bar start
 # write out data with file name indicating time it started collecting
 now = datetime.datetime.now()
 params = '%d,%d,%.2f,%d,%d,%.5f,%d,%.2f,%.2f,%.2f'%(rep,L,s,N0,K,mu,gen_num,cost,r,N1r)
-file_name = './data/c1.2s_%s(0).csv'%(params)
+file_name = './data/c1.2.2s_%s(0).csv'%(params)
 while file_name[7::] in os.listdir('./data'):
     lastnum = int(file_name[-6])
     file_name = file_name[0:-6] + str(lastnum+1) + file_name[-5::]
