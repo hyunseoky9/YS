@@ -1,14 +1,9 @@
-# Influenza Competition model 1.2
-# Same concept as comp model 1 but more efficient. 
-# Some key differences:
-# - No sequence information using array. Only keeps track of mutant allele amount
-
-import numpy as np
-import datetime
-import timeit
-from progress.bar import Bar
-import sys
-import os
+# Influenza Competition model
+# This is a test model for population change in a pool of virus with 1 segmented
+# virus and multi-segmented virus. Virus accumulates deleterious mutations that
+# reduces selection coefficient, and the negative impact of the mutant allele is
+# multiplicative. 
+# Stat mode repeats the simulation n number of times and count which subpop won and puts out into a csv file. 
 
 # Parameters
 # L = sequence length for a virus
@@ -19,88 +14,79 @@ import os
 # gen_num = generation amount 
 # r = reassortment rate
 # rep = repetition amount
-# N1r = ratio of 1segment virus
+import numpy as np
+import datetime
+import timeit
+from progress.bar import Bar
+import sys
+import os
 
-#default parameters
 rep = 100
 L = 300
 s = 0.05
 N0 = 1000
 K = 1000
-mu = 0.0005
+mu = 0.0007
 gen_num = 500
-cost = 0.00
+N = N0
+cost = 0
 r = 0.5
-N1r = 0.5
 
-class Virus1():
+class Virus():
     """
-    This class produces objects which are single agents of a influenza virus with 1 segment.
-    k = number of deleterious mutation in entire genome
+    This class produces objects which are single agents of a influenza virus.
+    seg_n = number of segments
+    k = number of deleterious mutation
     s = fitness decrease from deleterious mutation
     L = sequence length for a virus
     cost = cost of having multisegments
     w = fitness
-    """
-    def __init__(self,k):
-        self.k = k
-        self.w = (1 - s)**self.k
-    
-    def mutate(self,mu):
-        """
-        Mutation in sequence before reproduction
-        mu = mutation rate
-        """
-        mut_num = int(np.random.binomial(L, mu)) # number of mutation
-        for i in range(mut_num):
-            if np.random.uniform(0,L) < self.k:
-                self.k -= 1 # back mutation
-            else:
-                self.k += 1 # normal mutation
-                
-                
-class Virus2():
-    """
-    This class produces objects which are single agents of a influenza virus with 2 segments.
-    k1 = number of deleterious mutation in segment1
-    k2 = number of deleterious mutation in segment2
-    k = number of deleterious mutation in entire genome
-    cost = cost of having multisegments
-    w = fitness
     progeny_n = number of progenies a virus agent will have during reproduction. Default is 0.
+    seq = sequence vector
+    one_index = index of allele that is 1 (mutant)
     """
-    def __init__(self,k1, k2):
-        self.k1 = k1
-        self.k2 = k2
-        self.k = self.k1 + self.k2
+    def __init__(self,one_index,k,seg_n):
+        self.seg_n = seg_n
+        self.k = k
+        self.s = s
+        self.L = L
+        self.cost = cost
         self.progeny_n = 0
-        self.w = (1 - s)**self.k - cost
+        if self.seg_n == 1:
+            self.w = (1 - self.s)**self.k
+        else:
+            self.w = (1 - self.s)**self.k - self.cost
+        self.seq = np.repeat(0,self.L)
+        for i in one_index:
+            self.seq[i] = 1
     
     def mutate(self,mu):
         """
         Mutation in sequence before reproduction
         mu = mutation rate
         """
-        mut_num = int(np.random.binomial(L, mu)) # number of mutation
-        for i in range(mut_num):
-            p = np.random.uniform(0,1)
-            if np.random.uniform(0,L) < self.k: # back mutation
-                if p < 0.5: # seg1
-                    self.k1 -= 1
-                    self.k -= 1
-                else: # seg2
-                    self.k2 -= 1
-                    self.k -= 1
-            else: # normal mutation
-                if p < 0.5: # seg1
-                    self.k1 += 1
-                    self.k += 1
-                else: # seg2
-                    self.k2 += 1
-                    self.k += 1
+        self.mutation_num = np.random.binomial(self.L, mu) # number of mutation
+        mut_seq_index = np.random.randint(self.L, size = self.mutation_num) # pick which allele goes thru mutation
+        for i in mut_seq_index:
+            if self.seq[i] == 1: # back mutation allowed.
+                self.seq[i] = 0
+                self.k -= 1
+            else:
+                self.seq[i] = 1
+                self.k += 1
 
 def reproduce(viruses1, viruses2):
     """
+    Reproduction process: Inputs virus population (1 and 2 segmented) and
+    outputs the virus population of next generation. The 1 segmented virus
+    goes through reproduction without reassortment as done in 1 segment influenza
+    model. number of offspring per virus agent gets decided by the poisson
+    sampling with a parameter that reflects selection coefficient and carrying
+    capacity. The 2 segmented virus goes through reproduction with reassortment.
+    Number of offspring per virus gets decided similarly, but 2 virus produces 1
+    virus. The last remaining virus particle goes through reproduction in a same
+    way as 1 segmented virus.
+
     input
         viruses1 = array of 1segmented virus agents.
         viruses2 = array of multi-segmented virus agents.
@@ -110,11 +96,11 @@ def reproduce(viruses1, viruses2):
     """
     next_gen1 = []
     next_gen2 = []
-    
     for i in range(len(viruses1)): # reproduction of 1segs
         progeny_n = np.random.poisson(viruses1[i].w*(2/(1+N/K))) # number of progeny for that virus
         for j in range(progeny_n):
-            next_gen1.append(Virus1(viruses1[i].k))
+            one_index = np.where(viruses1[i].seq == 1)[0]
+            next_gen1.append(Virus(one_index, viruses1[i].k, 1))
             
     remaining = [] # virus parents with remaining progenies to reproduce (for multi-segs)
     for i in range(len(viruses2)): # reproduction of multi-segs
@@ -135,21 +121,51 @@ def reproduce(viruses1, viruses2):
     # when there's only 1 index reamining, go through regular reproduction (no reassortment)
     for i in remaining:
         for j in range(viruses2[i].progeny_n):
-            next_gen2.append(Virus2(viruses2[i].k1, viruses2[i].k2))
+            one_index = np.where(viruses2[i].seq == 1)[0]
+            next_gen2.append(Virus(one_index, viruses2[i].k, 2))
     return next_gen1, next_gen2
 
 def reassort(v1, v2):
+    """
+    Reassortment process : In reassortment, two 2 segmented viruses mix
+    there segments to produce 2 offspring, or they just clone themselves. 
+    There's a r percent chance that they mix and other 50 that they don't.
+    When they mix one offspring gets first segment from v1 and the other
+    gets the first segment from v2. First segment of virus is 0:L/2 and
+    the second segment of virus is L/2:L.
+
+    Input:
+        2 parent virus objects
+    Output:
+        2 child virus objects
+    """
     prob = np.random.uniform(0,1)
     if prob < r: # reassortment
-        offspring1 = Virus2(v1.k1, v2.k2) # v1 gives first segment
-        offspring2 = Virus2(v2.k1, v1.k2) # v2 gives first segment
+        # v1 gives first segment
+        one_index1 = np.where(v1.seq[0:int(L/2)] == 1)[0] # index of mutant allele of 1st seg
+        one_index2 = np.where(v2.seq[int(L/2)::] == 1)[0] # index of mutant allele of 2nd seg
+        one_index2 = one_index2 + int(L/2)
+        one_index = list(one_index1) + list(one_index2) # mix the segment
+        k = len(one_index)
+        offspring1 = Virus(one_index, k, v1.seg_n)
+        # v2 gives first segment
+        one_index1 = np.where(v2.seq[0:int(L/2)] == 1)[0] # index of mutant allele of 1st seg
+        one_index2 = np.where(v1.seq[int(L/2)::] == 1)[0] # index of mutant allele of 2nd seg
+        one_index2 = one_index2 + int(L/2)
+        one_index = list(one_index1) + list(one_index2) # mix the segment
+        k = len(one_index)
+        offspring2 = Virus(one_index, k, v1.seg_n)
         return offspring1, offspring2
     else: # no reassortment
-        offspring1 = Virus2(v1.k1,v1.k2)
-        offspring2 = Virus2(v2.k1,v2.k2)
+        one_index = np.where(v1.seq == 1)[0]
+        k = len(one_index)
+        offspring1 = Virus(one_index, k, v1.seg_n)
+        
+        one_index = np.where(v2.seq == 1)[0]
+        k = len(one_index)
+        offspring2 = Virus(one_index, k, v1.seg_n)
+        
         return offspring1, offspring2
-
-
 
 if len(sys.argv) > 1: # input parameters from command line
     try:
@@ -162,17 +178,15 @@ if len(sys.argv) > 1: # input parameters from command line
         gen_num = int(sys.argv[7])
         cost = float(sys.argv[8])
         r = float(sys.argv[9])
-        N1r = float(sys.argv[10])
     except:
         pass
-
 
 start = timeit.default_timer() # timer start
 bar = Bar('Processing', max=rep) # progress bar start
 # write out data with file name indicating time it started collecting
 now = datetime.datetime.now()
-params = '%d,%d,%.2f,%d,%d,%.5f,%d,%.2f,%.2f,%.2f'%(rep,L,s,N0,K,mu,gen_num,cost,r,N1r)
-file_name = './data/c1.2s_%s(0).csv'%(params)
+params = '%d,%d,%.2f,%d,%d,%.5f,%d,%.2f,%.2f'%(rep,L,s,N0,K,mu,gen_num,cost,r)
+file_name = './data/c1.1s_%s(0).csv'%(params)
 while file_name[7::] in os.listdir('./data'):
     lastnum = int(file_name[-6])
     file_name = file_name[0:-6] + str(lastnum+1) + file_name[-5::]
@@ -181,13 +195,13 @@ fh.write('pop1,pop2,k1,k2\n')
 
 for repe in range(rep):
     # Initialize the virus population. Each subpopulation gets half the population.
-    N = N0
+    N = N0 # reinitialize N
     viruses1 = []
     viruses2 = []
-    for i in range(int(N*(1-N1r))):
-        viruses2.append(Virus2(0,0))
-    for i in range(int(N*N1r)):
-        viruses1.append(Virus1(0))
+    for i in range(int(N/2)):
+        viruses2.append(Virus([],0,2))
+    for i in range(int(N/2)):
+        viruses1.append(Virus([],0,1))
 
     # run the simulation
     for gen in range(gen_num):
