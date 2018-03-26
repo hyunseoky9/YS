@@ -1,0 +1,1 @@
+this set of data contain varied initial 1seg:2seg ratio with rest of the parameters constant.
