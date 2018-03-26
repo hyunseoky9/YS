@@ -22,16 +22,16 @@ import os
 # N1r = ratio of 1segment virus
 
 #default parameters
-rep = 100
+rep = 1
 L = 300
 s = 0.05
 N0 = 1000
 K = 1000
-mu = 0.0005
+mu = 0.0001
 gen_num = 500
 cost = 0.00
 r = 0.5
-N1r = 0.5
+N1r = 0.1
 
 class Virus1():
     """
@@ -171,54 +171,100 @@ start = timeit.default_timer() # timer start
 bar = Bar('Processing', max=rep) # progress bar start
 # write out data with file name indicating time it started collecting
 now = datetime.datetime.now()
+destination = input('Enter file destination?')
 params = '%d,%d,%.2f,%d,%d,%.5f,%d,%.2f,%.2f,%.2f'%(rep,L,s,N0,K,mu,gen_num,cost,r,N1r)
-file_name = './data/c1.2s_%s(0).csv'%(params)
+file_name = './data/'+destination+'/c1.2.2s_%s(0).csv'%(params)
 while file_name[7::] in os.listdir('./data'):
     lastnum = int(file_name[-6])
     file_name = file_name[0:-6] + str(lastnum+1) + file_name[-5::]
 fh = open(file_name,'w')
-fh.write('pop1,pop2,k1,k2\n')
+detail = input('Do you want to record the population of each time step? 0=no 1=yes (Will only record last step if typed "no")')
+if detail:
+    fh.write('rep,t,pop1,pop2,k1,k2\n')
+    for repe in range(rep):
+        # Initialize the virus population. Each subpopulation gets half the population.
+        N = N0
+        viruses1 = []
+        viruses2 = []
+        for i in range(int(N*(1-N1r))):
+            viruses2.append(Virus2(0,0))
+        for i in range(int(N*N1r)):
+            viruses1.append(Virus1(0))
+        fh.write('%d,%d,%d,%d,%.2f,%.2f\n'%(repe+1,0,len(viruses1),len(viruses2),0,0))
 
-for repe in range(rep):
-    # Initialize the virus population. Each subpopulation gets half the population.
-    N = N0
-    viruses1 = []
-    viruses2 = []
-    for i in range(int(N*(1-N1r))):
-        viruses2.append(Virus2(0,0))
-    for i in range(int(N*N1r)):
-        viruses1.append(Virus1(0))
+        # run the simulation
+        for gen in range(gen_num):
+            if len(viruses1) == 0 or len(viruses2) == 0: # terminate if either subpop -> 0
+                break
+            for i in range(len(viruses1)):
+                viruses1[i].mutate(mu)
+            for j in range(len(viruses2)):
+                viruses2[j].mutate(mu)
+            viruses1, viruses2 = reproduce(viruses1,viruses2)
 
-    # run the simulation
-    for gen in range(gen_num):
-        if len(viruses1) == 0 or len(viruses2) == 0: # terminate if either subpop -> 0
-            break
-        for i in range(len(viruses1)):
-            viruses1[i].mutate(mu)
-        for j in range(len(viruses2)):
-            viruses2[j].mutate(mu)
-        viruses1, viruses2 = reproduce(viruses1,viruses2)
-        N = len(viruses1) + len(viruses2)
+            # get kmean for each subpop
+            ks = [] # k's for each virus in a subpop
+            if len(viruses1)>0:
+                for i in range(len(viruses1)):
+                    ks.append(viruses1[i].k)
+                k_means1 = np.mean(np.array(ks))
+            else:
+                k_means1 = -1
+            ks = []
+            if len(viruses2)>0:
+                for j in range(len(viruses2)):
+                    ks.append(viruses2[j].k)
+                k_means2 = np.mean(np.array(ks))
+            else:
+                k_means2 = -1
 
-    # get kmean for each subpop
-    ks = [] # k's for each virus in a subpop
-    if len(viruses1)>0:
-        for i in range(len(viruses1)):
-            ks.append(viruses1[i].k)
-        k_means1 = np.mean(np.array(ks))
-    else:
-        k_means1 = -1
-    ks = []
-    if len(viruses2)>0:
-        for j in range(len(viruses2)):
-            ks.append(viruses2[j].k)
-        k_means2 = np.mean(np.array(ks))
-    else:
-        k_means2 = -1
+            fh.write('%d,%d,%d,%d,%.2f,%.2f\n'%(repe+1,gen+1,len(viruses1),len(viruses2),k_means1, k_means2))
+            N = len(viruses1) + len(viruses2)
 
-    fh.write('%d,%d,%.2f,%.2f\n'%(len(viruses1),len(viruses2),
-                                 k_means1, k_means2)) 
-    bar.next()
+        bar.next()
+
+else:
+    fh.write('pop1,pop2,k1,k2\n')
+    for repe in range(rep):
+        # Initialize the virus population. Each subpopulation gets half the population.
+        N = N0
+        viruses1 = []
+        viruses2 = []
+        for i in range(int(N*(1-N1r))):
+            viruses2.append(Virus2(0,0))
+        for i in range(int(N*N1r)):
+            viruses1.append(Virus1(0))
+
+        # run the simulation
+        for gen in range(gen_num):
+            if len(viruses1) == 0 or len(viruses2) == 0: # terminate if either subpop -> 0
+                break
+            for i in range(len(viruses1)):
+                viruses1[i].mutate(mu)
+            for j in range(len(viruses2)):
+                viruses2[j].mutate(mu)
+            viruses1, viruses2 = reproduce(viruses1,viruses2)
+            N = len(viruses1) + len(viruses2)
+
+        # get kmean for each subpop
+        ks = [] # k's for each virus in a subpop
+        if len(viruses1)>0:
+            for i in range(len(viruses1)):
+                ks.append(viruses1[i].k)
+            k_means1 = np.mean(np.array(ks))
+        else:
+            k_means1 = -1
+        ks = []
+        if len(viruses2)>0:
+            for j in range(len(viruses2)):
+                ks.append(viruses2[j].k)
+            k_means2 = np.mean(np.array(ks))
+        else:
+            k_means2 = -1
+
+        fh.write('%d,%d,%.2f,%.2f\n'%(len(viruses1),len(viruses2),
+                                     k_means1, k_means2)) 
+        bar.next()
 
 fh.close()
 stop = timeit.default_timer()
