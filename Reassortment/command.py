@@ -1,7 +1,7 @@
 from os import system as cd
 import sys
 import numpy as np
-rep = 1
+rep = 50
 L = 300
 s = 0.05
 N0 = 1000
@@ -12,7 +12,7 @@ mu = 0.0001
 gen_num = 500
 cost = 0
 r = 0.5
-N1r = 0.1
+N1r = 0.0
 #N1r = np.linspace(0.1,0.9,9)
 params = '%d %d %f %d %d %.5f %d %f %f %f'%(rep,L,s,N0,K,mu,gen_num,cost,r,N1r)
 file2run = sys.argv[1]
