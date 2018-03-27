@@ -1,6 +1,7 @@
 # Influenza Competition model 1.2.2
 # Same concept as comp model 1 but more efficient. 
 # Some key differences:
+# - back mutation, tracking info, and program cut strategy parameterized.
 # - IT HAS BACK MUTATION (NO BACKMUTATION IN 1.2)
 # - No sequence information using array. Only keeps track of mutant allele amount
 
@@ -23,6 +24,10 @@ import os
 # N1r = ratio of 1segment virus
 
 #default parameters
+back = 0
+timestep = 0
+indivk = 0
+untilext = 0
 rep = 100
 L = 300
 s = 0.05
@@ -33,6 +38,18 @@ gen_num = 500
 cost = 0.00
 r = 0.5
 N1r = 0.5
+
+if len(sys.argv) > 1: # input parameters from command line
+    try:
+        back = int(sys.argv[1])
+        timestep = int(sys.argv[2])
+        indivk = int(sys.argv[3])
+        untilext = int(sys.argv[4])
+
+    except:
+        pass
+
+
 
 class Virus1():
     """
@@ -53,9 +70,15 @@ class Virus1():
         mu = mutation rate
         """
         mut_num = int(np.random.binomial(L, mu)) # number of mutation
-        self.k += mut_num
-                
-                
+        if not back:
+            self.k += mut_num
+        else:
+            for i in range(mut_num):
+                if np.random.uniform(0,L) < self.k:
+                    self.k -= 1 # back mutation
+                else:
+                    self.k += 1 # normal mutation
+                    
 class Virus2():
     """
     This class produces objects which are single agents of a influenza virus with 2 segments.
@@ -79,9 +102,29 @@ class Virus2():
         mu = mutation rate
         """
         mut_num = int(np.random.binomial(L, mu)) # number of mutation
-        split_pt = int(np.ceil(np.random.uniform(0,1)*mut_num)) # how much of the mutation segment1 is getting
-        self.k1 += split_pt
-        self.k2 += mut_num - split_pt
+        if not back:
+            split_pt = int(np.ceil(np.random.uniform(0,1)*mut_num)) # how much of the mutation segment1 is getting
+            self.k1 += split_pt
+            self.k2 += mut_num - split_pt
+        else:
+            for i in range(mut_num):
+                p = np.random.uniform(0,1)
+                if np.random.uniform(0,L) < self.k: # back mutation
+                    if p < 0.5: # seg1
+                        self.k1 -= 1
+                        self.k -= 1
+                    else: # seg2
+                        self.k2 -= 1
+                        self.k -= 1
+                else: # normal mutation
+                    if p < 0.5: # seg1
+                        self.k1 += 1
+                        self.k += 1
+                    else: # seg2
+                        self.k2 += 1
+                        self.k += 1
+
+
 
 def reproduce(viruses1, viruses2):
     """
@@ -137,16 +180,16 @@ def reassort(v1, v2):
 
 if len(sys.argv) > 1: # input parameters from command line
     try:
-        rep = int(sys.argv[1])
-        L = int(sys.argv[2])
-        s = float(sys.argv[3])
-        N0 = int(sys.argv[4])
-        K = int(sys.argv[5])
-        mu = float(sys.argv[6])
-        gen_num = int(sys.argv[7])
-        cost = float(sys.argv[8])
-        r = float(sys.argv[9])
-        N1r = float(sys.argv[10])
+        rep = int(sys.argv[5])
+        L = int(sys.argv[6])
+        s = float(sys.argv[7])
+        N0 = int(sys.argv[8])
+        K = int(sys.argv[9])
+        mu = float(sys.argv[10])
+        gen_num = int(sys.argv[11])
+        cost = float(sys.argv[12])
+        r = float(sys.argv[13])
+        N1r = float(sys.argv[14])
     except:
         pass
 
@@ -165,10 +208,8 @@ while tail in os.listdir('./data/'+destination):
     tail = tail[0:-6] + str(lastnum+1) + tail[-5::] 
 file_name = './data/' + destination + '/' + tail
 fh = open(file_name,'w')
-detail = input('Do you want to record the population of each time step? 0=no 1=yes (Will only record last step if typed "no")')
-if detail: 
-    detail2 = input('Do you want to record each individual\'s k? 0=no 1=yes (Will only record means if "no"')
-if detail:
+
+if timestep:
     fh.write('rep,t,pop1,pop2,k1,k2\n')
     for repe in range(rep):
         # Initialize the virus population. Each subpopulation gets half the population.
@@ -179,16 +220,23 @@ if detail:
             viruses2.append(Virus2(0,0))
         for i in range(int(N*N1r)):
             viruses1.append(Virus1(0))
-        if detail2:
+        if indivk:
+            list1 = list(np.repeat(0,N*(N1r)))
+            if len(list1) == 0:
+                list1 = ['NA']
+            list2 = list(np.repeat(0,N*(1-N1r)))
+            if len(list2) == 0:
+                list2 = ['NA']
             fh.write('%d,%d,%d,%d,%s,%s\n'%(repe+1,0,len(viruses1),len(viruses2),
-                str(list(np.repeat(0,N*(1-N1r)))),str(list(np.repeat(0,N*N1r)))))
+                str(list1),str(list2)))
         else:
             fh.write('%d,%d,%d,%d,%.2f,%.2f\n'%(repe+1,0,len(viruses1),len(viruses2),0,0))
 
         # run the simulation
         for gen in range(gen_num):
-            if len(viruses1) == 0 or len(viruses2) == 0: # terminate if either subpop -> 0
-                break
+            if untilext:            
+                if len(viruses1) == 0 or len(viruses2) == 0: # terminate if either subpop -> 0
+                    break
             for i in range(len(viruses1)):
                 viruses1[i].mutate(mu)
             for j in range(len(viruses2)):
@@ -196,7 +244,7 @@ if detail:
             viruses1, viruses2 = reproduce(viruses1,viruses2)
 
             # get kmean for each subpop
-            if not detail2:
+            if not int(indivk):
                 ks = [] # k's for each virus in a subpop
                 if len(viruses1)>0:
                     for i in range(len(viruses1)):
@@ -245,8 +293,9 @@ else:
 
         # run the simulation
         for gen in range(gen_num):
-            if len(viruses1) == 0 or len(viruses2) == 0: # terminate if either subpop -> 0
-                break
+            if untilext:
+                if len(viruses1) == 0 or len(viruses2) == 0: # terminate if either subpop -> 0
+                    break
             for i in range(len(viruses1)):
                 viruses1[i].mutate(mu)
             for j in range(len(viruses2)):
