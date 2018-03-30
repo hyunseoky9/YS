@@ -2,10 +2,10 @@ from os import system as cd
 import sys
 import numpy as np
 back = 0
-timestep = 0
-indivk = 0
+timestep = 1
+indivk = 1
 untilext = 0
-rep = 50
+rep = 1
 L = 300
 s = 0.05
 N0 = 1000
@@ -13,12 +13,13 @@ K = 1000
 mu = 0.0001
 #mu = list(np.linspace(0.0001, 0.0009, 9))
 #del mu[4]
-gen_num = 500
+gen_num = 10
 cost = 0
 r = 0.5
-N1r = 5
+N1r = 0
+destination = 'test'
 #N1r = np.linspace(0.1,0.9,9)
-params = '%d %d %d %d %d %d %f %d %d %.5f %d %f %f %f'%(back,timestep,indivk,untilext,rep,L,s,N0,K,mu,gen_num,cost,r,N1r)
+params = '%s %d %d %d %d %d %d %f %d %d %.5f %d %f %f %f'%(destination,back,timestep,indivk,untilext,rep,L,s,N0,K,mu,gen_num,cost,r,N1r)
 file2run = sys.argv[1]
 cd('python %s %s'%(file2run, params))
 

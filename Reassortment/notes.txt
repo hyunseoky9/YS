@@ -1,13 +1,17 @@
 Todo:
 check if 1.2 follow f0 eq when there's no mutation for 1 segment and 2 segment
 
+- track only ratios of k (f0, f1, f2, etc.)
+
+- make wf model. comp1.3?
+
+- read all relevent papers downloaded on 3.29
+
 - change starting ratio, when the params are set for 2seg winning.
 
 - check if, on the turn of the next ratchet, the next least loaded class is 1.6*n0 (look at 1segements). See if the timing of approaching 1.6*n0 gets slower with smaller n0 and s. 
 
 - try parallelizing the 1.2 version.
-
-- read haig
 
 problem with parallel:
 somehow when running the generations, it's not running the same way as it was sequential....

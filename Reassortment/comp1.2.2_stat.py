@@ -2,7 +2,6 @@
 # Same concept as comp model 1 but more efficient. 
 # Some key differences:
 # - back mutation, tracking info, and program cut strategy parameterized.
-# - IT HAS BACK MUTATION (NO BACKMUTATION IN 1.2)
 # - No sequence information using array. Only keeps track of mutant allele amount
 
 import numpy as np
@@ -28,28 +27,26 @@ back = 0
 timestep = 0
 indivk = 0
 untilext = 0
-rep = 100
+rep = 1
 L = 300
 s = 0.05
 N0 = 1000
 K = 1000
 mu = 0.0005
-gen_num = 500
+gen_num = 10
 cost = 0.00
 r = 0.5
 N1r = 0.5
 
 if len(sys.argv) > 1: # input parameters from command line
     try:
-        back = int(sys.argv[1])
-        timestep = int(sys.argv[2])
-        indivk = int(sys.argv[3])
-        untilext = int(sys.argv[4])
+        back = int(sys.argv[2])
+        timestep = int(sys.argv[3])
+        indivk = int(sys.argv[4])
+        untilext = int(sys.argv[5])
 
     except:
         pass
-
-
 
 class Virus1():
     """
@@ -180,16 +177,16 @@ def reassort(v1, v2):
 
 if len(sys.argv) > 1: # input parameters from command line
     try:
-        rep = int(sys.argv[5])
-        L = int(sys.argv[6])
-        s = float(sys.argv[7])
-        N0 = int(sys.argv[8])
-        K = int(sys.argv[9])
-        mu = float(sys.argv[10])
-        gen_num = int(sys.argv[11])
-        cost = float(sys.argv[12])
-        r = float(sys.argv[13])
-        N1r = float(sys.argv[14])
+        rep = int(sys.argv[6])
+        L = int(sys.argv[7])
+        s = float(sys.argv[8])
+        N0 = int(sys.argv[9])
+        K = int(sys.argv[10])
+        mu = float(sys.argv[11])
+        gen_num = int(sys.argv[12])
+        cost = float(sys.argv[13])
+        r = float(sys.argv[14])
+        N1r = float(sys.argv[15])
     except:
         pass
 
@@ -198,7 +195,12 @@ start = timeit.default_timer() # timer start
 bar = Bar('Processing', max=rep) # progress bar start
 # write out data with file name indicating time it started collecting
 now = datetime.datetime.now()
-destination = input('Enter file destination?: ')
+if len(sys.argv) > 1:
+    try:
+        destination = sys.argv[1] 
+    except:
+        pass
+destination = 'test'
 if destination not in os.listdir('./data'):
     os.system('mkdir ./data/' + destination)
 params = '%d,%d,%.2f,%d,%d,%.5f,%d,%.2f,%.2f,%.2f'%(rep,L,s,N0,K,mu,gen_num,cost,r,N1r)
@@ -272,7 +274,7 @@ if timestep:
                 ks2 = []
                 if len(viruses2)>0:
                     for j in range(len(viruses2)):
-                        ks.append(viruses2[j].k)
+                        ks2.append(viruses2[j].k)
                 else:
                     ks2.append('NA')
                 fh.write('%d,%d,%d,%d,%s,%s\n'%(repe+1,gen+1,len(viruses1),len(viruses2),str(ks1),str(ks2)))
