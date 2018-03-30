@@ -1,0 +1,2 @@
+this data is to see whether higher mutation rate with no back mutation
+will prevent the population from falling under muller's ratchet.
