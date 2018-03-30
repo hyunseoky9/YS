@@ -226,9 +226,11 @@ if timestep:
             list1 = list(np.repeat(0,N*(N1r)))
             if len(list1) == 0:
                 list1 = ['NA']
+            list1 = str(list1).replace(', ','.')[1:-1]
             list2 = list(np.repeat(0,N*(1-N1r)))
             if len(list2) == 0:
                 list2 = ['NA']
+            list2 = str(list2).replace(', ','.')[1:-1]
             fh.write('%d,%d,%d,%d,%s,%s\n'%(repe+1,0,len(viruses1),len(viruses2),
                 str(list1),str(list2)))
         else:
@@ -271,13 +273,15 @@ if timestep:
                         ks1.append(viruses1[i].k)
                 else:
                     ks1.append('NA')
+                ks1 = str(ks1).replace(', ','.')[1:-1]
                 ks2 = []
                 if len(viruses2)>0:
                     for j in range(len(viruses2)):
                         ks2.append(viruses2[j].k)
                 else:
                     ks2.append('NA')
-                fh.write('%d,%d,%d,%d,%s,%s\n'%(repe+1,gen+1,len(viruses1),len(viruses2),str(ks1),str(ks2)))
+                ks2 = str(ks2).replace(', ','.')[1:-1]
+                fh.write('%d,%d,%d,%d,%s,%s\n'%(repe+1,gen+1,len(viruses1),len(viruses2),ks1,ks2))
                 N = len(viruses1) + len(viruses2)
         bar.next()
 
@@ -322,7 +326,7 @@ else:
             k_means2 = -1
 
         fh.write('%d,%d,%.2f,%.2f\n'%(len(viruses1),len(viruses2),
-                                     k_means1, k_means2)) 
+                                     k_means1, k_means2))
         bar.next()
 
 fh.close()
