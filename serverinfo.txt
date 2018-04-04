@@ -6,5 +6,9 @@ metazoa
 wifi 
 evolgen
 evolgenlab
-computer pw: music
-	
+
+
+kangchon:	
+pw: music
+teamviewer-id:813538446
+teamviewer-pw:em934i
