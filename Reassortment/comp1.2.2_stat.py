@@ -12,6 +12,10 @@ import sys
 import os
 
 # Parameters
+# back = presence of back mutation
+# timestep = deciding to record every timestep
+# krecord = deciding how to record k (0='mean',1='every k',2='smallest k') each timestep
+# untilext = deciding to terminate the simulation if one subpop collapse.
 # L = sequence length for a virus
 # N = Population size (N0 = initial population)
 # K = Carrying capacity
@@ -25,7 +29,7 @@ import os
 #default parameters
 back = 0
 timestep = 0
-indivk = 0
+krecord = 0
 untilext = 0
 rep = 1
 L = 300
@@ -42,7 +46,7 @@ if len(sys.argv) > 1: # input parameters from command line
     try:
         back = int(sys.argv[2])
         timestep = int(sys.argv[3])
-        indivk = int(sys.argv[4])
+        krecord = int(sys.argv[4])
         untilext = int(sys.argv[5])
 
     except:
@@ -195,15 +199,15 @@ start = timeit.default_timer() # timer start
 bar = Bar('Processing', max=rep) # progress bar start
 # write out data with file name indicating time it started collecting
 now = datetime.datetime.now()
+destination = 'test'
 if len(sys.argv) > 1:
     try:
         destination = sys.argv[1] 
     except:
         pass
-destination = 'test'
 if destination not in os.listdir('./data'):
     os.system('mkdir ./data/' + destination)
-params = '%d,%d,%.2f,%d,%d,%.5f,%d,%.2f,%.2f,%.2f'%(rep,L,s,N0,K,mu,gen_num,cost,r,N1r)
+params = '%d,%d,%d,%.2f,%d,%d,%.5f,%d,%.2f,%.2f,%.2f'%(back,rep,L,s,N0,K,mu,gen_num,cost,r,N1r)
 tail = 'c1.2.2s_%s(0).csv'%(params)
 while tail in os.listdir('./data/'+destination):
     lastnum = int(tail[-6])
@@ -222,7 +226,7 @@ if timestep:
             viruses2.append(Virus2(0,0))
         for i in range(int(N*N1r)):
             viruses1.append(Virus1(0))
-        if indivk:
+        if krecord == 1:
             list1 = list(np.repeat(0,N*(N1r)))
             if len(list1) == 0:
                 list1 = ['NA']
@@ -248,7 +252,7 @@ if timestep:
             viruses1, viruses2 = reproduce(viruses1,viruses2)
 
             # get kmean for each subpop
-            if not int(indivk):
+            if not int(krecord):
                 ks = [] # k's for each virus in a subpop
                 if len(viruses1)>0:
                     for i in range(len(viruses1)):
@@ -265,8 +269,7 @@ if timestep:
                     k_means2 = -1
 
                 fh.write('%d,%d,%d,%d,%.2f,%.2f\n'%(repe+1,gen+1,len(viruses1),len(viruses2),k_means1, k_means2))
-                N = len(viruses1) + len(viruses2)
-            else:
+            elif int(krecord) == 1:
                 ks1 = [] # k's for each virus in a subpop
                 if len(viruses1)>0:
                     for i in range(len(viruses1)):
@@ -282,7 +285,24 @@ if timestep:
                     ks2.append('NA')
                 ks2 = str(ks2).replace(', ','.')[1:-1]
                 fh.write('%d,%d,%d,%d,%s,%s\n'%(repe+1,gen+1,len(viruses1),len(viruses2),ks1,ks2))
-                N = len(viruses1) + len(viruses2)
+            else:
+                if len(viruses1)>0:
+                    kmin1 = viruses1[0].k
+                    for i in range(len(viruses1)):
+                        if viruses1[i].k < kmin1:
+                            kmin1 = viruses1[i].k
+                else:
+                    kmin1 = -1
+                if len(viruses2)>0:
+                    kmin2 = viruses2[0].k
+                    for j in range(len(viruses2)):
+                        if viruses2[j].k < min2:
+                            kmin2 = viruses2[j].k
+                else:
+                    kmin2 = -1
+
+                fh.write('%d,%d,%d,%d,%.2f,%.2f\n'%(repe+1,gen+1,len(viruses1),len(viruses2),kmin1, kmin2))
+            N = len(viruses1) + len(viruses2)
         bar.next()
 
 else:

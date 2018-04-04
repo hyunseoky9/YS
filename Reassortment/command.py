@@ -2,26 +2,34 @@ from os import system as cd
 import sys
 import numpy as np
 back = 0
-timestep = 1
-indivk = 1
-untilext = 0
-rep = 1
+timestep = 0
+krecord = 0 # if 2, records smallest k of the subpop.
+untilext = 1
+rep = 1000
 L = 300
 s = 0.05
 N0 = 1000
 K = 1000
-mu = 0.0001
-#mu = list(np.linspace(0.0001, 0.0009, 9))
+mu = [0.0002,0.0003,0.0004,0.0005,0.0006,0.0007,0.0008,0.0009,0.0010,0.0011,0.0012]
 #del mu[4]
-gen_num = 10
+gen_num = 500
 cost = 0
 r = 0.5
-N1r = 0
+N1r = 0.5
 destination = 'test'
 #N1r = np.linspace(0.1,0.9,9)
-params = '%s %d %d %d %d %d %d %f %d %d %.5f %d %f %f %f'%(destination,back,timestep,indivk,untilext,rep,L,s,N0,K,mu,gen_num,cost,r,N1r)
 file2run = sys.argv[1]
-cd('python %s %s'%(file2run, params))
+version = file2run[4:7]
+
+for i in range(len(mu)):
+	if version == '1.2':
+		params = '%s %d %d %d %d %d %d %f %d %d %.5f %d %f %f %f'%(destination,back,timestep,krecord,untilext,
+																	rep,L,s,N0,K,mu[i],gen_num,cost,r,N1r)
+	cd('python %s %s'%(file2run, params))
+
+#elif version == '1.3':
+#	params = '%s %d %d %d %d %f %d %d %.5f %d %f %f %f'%(destination,back,timestep,krecord,
+#															rep,L,s,N0,K,mu[i],gen_num,cost,r,N1r)
 
 #for j in range(len(mu)):
 #	for i in range(len(N1r)):

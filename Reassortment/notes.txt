@@ -1,6 +1,8 @@
 Todo:
 check if 1.2 follow f0 eq when there's no mutation for 1 segment and 2 segment
 
+- see if smaller population allows no back mutation model to resist muller's ratchet effect.
+
 - track only ratios of k (f0, f1, f2, etc.)
 
 - make wf model. comp1.3?
@@ -28,3 +30,5 @@ Questions:
 Comments/findings:
 
 - as ratio of 1seg:2seg gets to around 7:3, 1segments start to win with mutation rate 0.005.
+
+- with mutation 0.0006, no back mutation model goes to average of k=12, whereas back mutation model goes to average of only k=2.5

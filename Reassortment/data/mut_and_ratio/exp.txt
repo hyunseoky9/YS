@@ -1,0 +1,3 @@
+*no back mutation
+varies mutation rate and ratio rate and see which one wins more
+
