@@ -24,10 +24,10 @@ version = file2run[4:7]
 for i in range(len(mu)):
 	for j in range(len(back)):
 		for k in range(len(N1r)):
-	if version == '1.2':
-		params = '%s %d %d %d %d %d %d %f %d %d %.5f %d %f %f %f'%(destination,back[j],timestep,krecord,untilext,
-																	rep,L,s,N0,K,mu[i],gen_num,cost,r,N1r[k])
-	cd('python %s %s'%(file2run, params))
+			if version == '1.2':
+				params = '%s %d %d %d %d %d %d %f %d %d %.5f %d %f %f %f'%(destination,back[j],timestep,krecord,untilext,
+																			rep,L,s,N0,K,mu[i],gen_num,cost,r,N1r[k])
+			cd('python %s %s'%(file2run, params))
 
 #elif version == '1.3':
 #	params = '%s %d %d %d %d %f %d %d %.5f %d %f %f %f'%(destination,back,timestep,krecord,
