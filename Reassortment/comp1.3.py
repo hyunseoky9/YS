@@ -122,4 +122,9 @@ class Virus2():
                         self.k2 += 1
                         self.k += 1
 
-def step()
+def step(pop):
+	next_gen_count = 0
+	sample = np.choice(pop, 2, replace=True)
+	if sample[0].id == 1 or sample[1].id == 1:
+		np.random.uniform(0,1)
+

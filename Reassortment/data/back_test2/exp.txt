@@ -1,6 +1,0 @@
-this one records the mean k of seg1 and seg2.
-the records are:
--seg1 with no back mutation
--seg1 with back mutation
--seg2 with no back mutation
--seg2 with back mutation
