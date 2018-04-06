@@ -15,20 +15,15 @@ check if 1.2 follow f0 eq when there's no mutation for 1 segment and 2 segment
 
 - try parallelizing the 1.2 version.
 
-problem with parallel:
-somehow when running the generations, it's not running the same way as it was sequential....
-Gotta check where its wrong starting from the top of the script.
-
-
 File nomenclature:
 c1.2s_(params) -> c = comp, 1.2 = ver, s = stat
 param order: rep,L,s,N0,K,mu,gen_num,cost,r
 
-Questions:
-- should mutation reflect fitness of the current generation or only of the next generation?
 
 Comments/findings:
 
 - as ratio of 1seg:2seg gets to around 7:3, 1segments start to win with mutation rate 0.005.
 
 - with mutation 0.0006, no back mutation model goes to average of k=12, whereas back mutation model goes to average of only k=2.5
+
+- with no back, the ratio of wins tend to be 550/330 (seg1/seg2).... (from win_ratio data) what does this mean?

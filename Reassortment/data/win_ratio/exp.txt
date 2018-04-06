@@ -1,0 +1,3 @@
+no back mutation with different mu. 1000 reps.
+seems to be that winning ratio of seg1 and seg2 is around a specific value
+with some variation.

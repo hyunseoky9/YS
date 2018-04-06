@@ -111,12 +111,19 @@ class Virus2():
             for i in range(mut_num):
                 p = np.random.uniform(0,1)
                 if np.random.uniform(0,L) < self.k: # back mutation
-                    if p < 0.5: # seg1
-                        self.k1 -= 1
-                        self.k -= 1
-                    else: # seg2
+                    if self.k1 == 0:
                         self.k2 -= 1
                         self.k -= 1
+                    elif self.k2 == 0:
+                        self.k1 -= 1
+                        self.k -= 1
+                    else: 
+                        if p < 0.5: # seg1
+                            self.k1 -= 1
+                            self.k -= 1
+                        else: # seg2
+                            self.k2 -= 1
+                            self.k -= 1
                 else: # normal mutation
                     if p < 0.5: # seg1
                         self.k1 += 1
