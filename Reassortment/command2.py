@@ -15,7 +15,7 @@ gen_num = 500
 cost = 0
 r = 0.5
 N1r = [0,1]
-destination = 'back_test3'
+destination = 'back_test'
 file2run = sys.argv[1]
 version = file2run[4:7]
 
