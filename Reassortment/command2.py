@@ -4,7 +4,7 @@ import numpy as np
 back = [0,1]
 timestep = 1
 krecord = 0 #  2= smallest k of the subpop. 1= all indiv's k. 0=mean k.
-untilext = 1
+untilext = 0
 rep = 100
 L = 300
 s = 0.05
@@ -23,8 +23,8 @@ for j in range(len(back)):
 	for k in range(len(N1r)):
 		for i in range(len(mu)):
 			if version == '1.2':
-				params = '%s %d %d %d %d %d %d %f %d %d %.5f %d %f %f %f'%(destination,back,timestep,krecord,untilext,
-																			rep,L,s,N0,K,mu[i],gen_num,cost,r,N1r)
+				params = '%s %d %d %d %d %d %d %f %d %d %.5f %d %f %f %f'%(destination,back[j],timestep,krecord,untilext,
+																			rep,L,s,N0,K,mu[i],gen_num,cost,r,N1r[k])
 			cd('python %s %s'%(file2run, params))
 
 #elif version == '1.3':

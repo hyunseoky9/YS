@@ -308,7 +308,7 @@ if timestep:
                 else:
                     kmin2 = -1
 
-                fh.write('%d,%d,%d,%d,%.2f,%.2f\n'%(repe+1,gen+1,len(viruses1),len(viruses2),kmin1, kmin2))
+                fh.write('%d,%d,%d,%d,%d,%d\n'%(repe+1,gen+1,len(viruses1),len(viruses2),kmin1, kmin2))
             N = len(viruses1) + len(viruses2)
         bar.next()
 
