@@ -205,7 +205,6 @@ if len(sys.argv) > 1: # input parameters from command line
 start = timeit.default_timer() # timer start
 bar = Bar('Processing', max=rep) # progress bar start
 # write out data with file name indicating time it started collecting
-now = datetime.datetime.now()
 destination = 'test'
 if len(sys.argv) > 1:
     try:
