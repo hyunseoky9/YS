@@ -27,3 +27,5 @@ Comments/findings:
 - with mutation 0.0006, no back mutation model goes to average of k=12, whereas back mutation model goes to average of only k=2.5
 
 - with no back, the ratio of wins tend to be 550/330 (seg1/seg2).... (from win_ratio data) what does this mean?
+
+- 1.3 slower than 1.2 because it has to make 1000 indivs (and even more sampling) every generation.	

@@ -79,6 +79,8 @@ class Virus1():
                     self.k -= 1 # back mutation
                 else:
                     self.k += 1 # normal mutation
+            self.w = (1 - s)**self.k
+
                     
 class Virus2():
     """
@@ -107,6 +109,8 @@ class Virus2():
             split_pt = int(np.ceil(np.random.uniform(0,1)*mut_num)) # how much of the mutation segment1 is getting
             self.k1 += split_pt
             self.k2 += mut_num - split_pt
+            self.k = self.k1 + self.k2
+            self.w = (1 - s)**self.k - cost
         else:
             for i in range(mut_num):
                 p = np.random.uniform(0,1)
@@ -131,6 +135,8 @@ class Virus2():
                     else: # seg2
                         self.k2 += 1
                         self.k += 1
+            self.w = (1 - s)**self.k
+
 
 
 
@@ -205,7 +211,6 @@ if len(sys.argv) > 1: # input parameters from command line
 start = timeit.default_timer() # timer start
 bar = Bar('Processing', max=rep) # progress bar start
 # write out data with file name indicating time it started collecting
-now = datetime.datetime.now()
 destination = 'test'
 if len(sys.argv) > 1:
     try:
@@ -308,7 +313,7 @@ if timestep:
                 else:
                     kmin2 = -1
 
-                fh.write('%d,%d,%d,%d,%.2f,%.2f\n'%(repe+1,gen+1,len(viruses1),len(viruses2),kmin1, kmin2))
+                fh.write('%d,%d,%d,%d,%d,%d\n'%(repe+1,gen+1,len(viruses1),len(viruses2),kmin1, kmin2))
             N = len(viruses1) + len(viruses2)
         bar.next()
 
