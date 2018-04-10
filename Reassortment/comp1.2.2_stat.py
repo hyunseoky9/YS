@@ -79,6 +79,8 @@ class Virus1():
                     self.k -= 1 # back mutation
                 else:
                     self.k += 1 # normal mutation
+            self.w = (1 - s)**self.k
+
                     
 class Virus2():
     """
@@ -107,6 +109,8 @@ class Virus2():
             split_pt = int(np.ceil(np.random.uniform(0,1)*mut_num)) # how much of the mutation segment1 is getting
             self.k1 += split_pt
             self.k2 += mut_num - split_pt
+            self.k = self.k1 + self.k2
+            self.w = (1 - s)**self.k - cost
         else:
             for i in range(mut_num):
                 p = np.random.uniform(0,1)
@@ -131,6 +135,8 @@ class Virus2():
                     else: # seg2
                         self.k2 += 1
                         self.k += 1
+            self.w = (1 - s)**self.k
+
 
 
 

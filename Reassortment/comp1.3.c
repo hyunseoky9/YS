@@ -11,12 +11,13 @@ int L = 300;
 double s = 0.05;
 #define N0 1000
 int K = 1000;
-int mu = 0.0005;
+float mu = 0.0005;
 int gen_num = 10;
 double cost = 0.00;
 double r = 0.5;
 double N1r = 0.5;
 long seed = 0;
+long bnlseed = 0;
 
 struct virus {
 	int id;
@@ -27,30 +28,77 @@ struct virus {
 
 //https://stackoverflow.com/questions/2620146/how-do-i-return-multiple-values-from-a-function-in-c
 float ran1(long *seed);
+float gammln(float xx);
+float bnldev(float pp, int n, long *idum);
 struct virus *step(struct virus popop[],struct virus *next_gen_p);
 
+
 int main(void) {
-	struct virus pop[100];
-	pop[0].id = 1;
-	pop[0].k1 = 2;
-	pop[0].k2 = 0;
-	pop[0].k = 2;
+	struct virus pop[N0];
+	//initialize
+	int N1 = N0*N1r;
+	int N2 = N0*(1-N1r);
+	for (int i=0;i<N1;i++){
+		pop[i].id = 1;
+		pop[i].k1 = 0;
+		pop[i].k2 = 0;
+		pop[i].k = 0;
+	}
+	for (int i=0;i<N2;i++){
+		pop[i+500].id = 2;
+		pop[i+500].k1 = 0;
+		pop[i+500].k2 = 0;
+		pop[i+500].k = 0;	
+	}
+	printf("pop1 has %d segments\n",pop[0].id);
+	printf("pop500 has %d segments\n",pop[500].id);
+
+	//go through generations
 	struct virus next_gen[N0];
-	printf("pop0 is %d segmented and have %d k1 and %d k mutations\n",pop[0].id,pop[0].k1,pop[0].k);
 	struct virus *pop2;
+
+	//mutate
 	pop2 = step(pop,&next_gen);
-	printf("pointer after function %p\n", pop2);
-	printf("Now pop0 is %d segmented and have %d k1 and %d k mutations\n",pop2[0].id,pop2[0].k1,pop2[0].k);
+	pop2[N0-1].id = 500;
+	printf("pop2 segment: %d",pop2[N0-1].id);
+	memcpy(pop,pop2,sizeof(struct virus)*N0);
+
+	pop2 = step(pop,&next_gen);
+
 	return 0;
 }
 
+
+void mutate(struct virus popop[]) {
+	for (int i=0;i<N0; i++){
+		bnlseed -= 1;
+		int mut_num = bnldev(mu,L,&bnlseed);
+		if (back == 1){ // back mutation
+
+		} else { // no back mutation 
+			if (popop[i].id == 1) {
+				popop[i].k += mut_num;
+			} else {
+				seed += 1;
+				int breakpt = floor(ran1(&seed)*(mut_num+1));
+				popop[i].k1 += breakpt;
+				popop[i].k2 += mut_num - breakpt;
+				popop[i].k = 
+			}
+		}
+	}
+}
+
+
 struct virus *step(struct virus popop[],struct virus *next_gen_p) {
-	int l = 0; // declared next gen length
-	next_gen_p[0].id = popop[0].id;
-	next_gen_p[0].k1 = popop[0].k1;
-	next_gen_p[0].k2 = popop[0].k2;
-	next_gen_p[0].k = popop[0].k;
-	/*while (len_next_gen <  N0) {
+	int l = 0; // next gen length
+	for (int i=0;i<N0;i++) {
+		next_gen_p[i].id = popop[i].id;
+		next_gen_p[i].k1 = popop[i].k1;
+		next_gen_p[i].k2 = popop[i].k2;
+		next_gen_p[i].k = popop[i].k;
+	}
+	/*while (l <  N0) {
 		seed += 1;
 		s1 = (int)floor(ran1(&seed)); // sample 1
 		seed += 1;
@@ -158,3 +206,73 @@ float ran1(long *idum)
 #undef NDIV
 #undef EPS
 #undef RNMX
+
+float gammln(float xx)
+{
+	double x,y,tmp,ser;
+	static double cof[6]={76.18009172947146,-86.50532032941677,
+		24.01409824083091,-1.231739572450155,
+		0.1208650973866179e-2,-0.5395239384953e-5};
+	int j;
+
+	y=x=xx;
+	tmp=x+5.5;
+	tmp -= (x+0.5)*log(tmp);
+	ser=1.000000000190015;
+	for (j=0;j<=5;j++) ser += cof[j]/++y;
+	return -tmp+log(2.5066282746310005*ser/x);
+}
+
+#define PI 3.141592654
+float bnldev(float pp, int n,long *idum)
+{
+	float gammln(float xx);
+	float ran1(long *idum);
+	int j;
+	static int nold=(-1);
+	float am,em,g,angle,p,bnl,sq,t,y;
+	static float pold=(-1.0),pc,plog,pclog,en,oldg;
+
+	p=(pp <= 0.5 ? pp : 1.0-pp);
+	am=n*p;
+	if (n < 25) {
+		bnl=0.0;
+		for (j=1;j<=n;j++)
+			if (ran1(idum) < p) bnl += 1.0;
+	} else if (am < 1.0) {
+		g=exp(-am);
+		t=1.0;
+		for (j=0;j<=n;j++) {
+			t *= ran1(idum);
+			if (t < g) break;
+		}
+		bnl=(j <= n ? j : n);
+	} else {
+		if (n != nold) {
+			en=n;
+			oldg=gammln(en+1.0);
+			nold=n;
+		} if (p != pold) {
+			pc=1.0-p;
+			plog=log(p);
+			pclog=log(pc);
+			pold=p;
+		}
+		sq=sqrt(2.0*am*pc);
+		do {
+			do {
+				angle=PI*ran1(idum);
+				y=tan(angle);
+				em=sq*y+am;
+			} while (em < 0.0 || em >= (en+1.0));
+			em=floor(em);
+			t=1.2*sq*(1.0+y*y)*exp(oldg-gammln(em+1.0)
+				-gammln(en-em+1.0)+em*plog+(en-em)*pclog);
+		} while (ran1(idum) > t);
+		bnl=em;
+	}
+	if (p != pp) bnl=n-bnl;
+	return bnl;
+}
+
+#undef PI
