@@ -92,7 +92,7 @@ class Virus2():
     w = fitness
     progeny_n = number of progenies a virus agent will have during reproduction. Default is 0.
     """
-    def __init__(self,k1, k2):
+    def __init__(self, k1, k2):
         self.k1 = k1
         self.k2 = k2
         self.k = self.k1 + self.k2
@@ -136,9 +136,6 @@ class Virus2():
                         self.k2 += 1
                         self.k += 1
             self.w = (1 - s)**self.k
-
-
-
 
 def reproduce(viruses1, viruses2):
     """
