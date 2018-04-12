@@ -1,0 +1,4 @@
+this one is same as back_test, but it has revised mutation function,
+where w is updated after a round of mutation and that updated w is
+reflected during reproduction proces..
+
