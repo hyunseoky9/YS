@@ -1,8 +1,16 @@
-# Influenza Competition model 1.2.2
-# Same concept as comp model 1 but more efficient. 
-# Some key differences:
-# - back mutation, tracking info, and program cut strategy parameterized.
-# - No sequence information using array. Only keeps track of mutant allele amount
+# Influenza Competition model 1.3
+# competition model btw 1seg and 2seg in a WF model
+# Some key differences from 1.2's:
+# - WF model (no demographic factor or carrying capcacity for that matter.)
+# Reproduction process:
+# 1. pick 2 random parents
+# 2. If either one is 1segment, only one of them gets replicated.
+# 3. If both of them are 2segement, it goes through recombination with 
+#    a probability of r, and one of the progeny is created.
+# 4. the created progeny from either proces  2. or 3. are assessed 
+# 5. whether they will survive by their fitness factor w.
+# 6. If a random number ([0,1]) exceeds w, the progeny dies and 
+#    has to go through the process 2.-5. again.
 
 import numpy as np
 import datetime
