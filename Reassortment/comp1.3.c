@@ -17,7 +17,9 @@
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>
-
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
 /*
  Parameters
  back = whether the simulation allows back mutation (1 if there's one. 0 if there isn't)
@@ -36,18 +38,18 @@
 
 int back = 0;
 int timestep = 0;
-int krecord = 0;
+int krecord = 2;
 char *destination = "ctest";
-int rep = 1;
+int rep = 3;
 int L = 300;
 double s = 0.05;
-#define N0 50
+int N0 = 50;
 int K = 1000;
 float mu = 0.005;
 int gen_num = 10;
 double cost = 0.00;
 double r = 0.5;
-double N1r = 0.5;
+double N1r = 0;
 long seed = -1;
 
 struct virus {
@@ -61,67 +63,198 @@ struct virus {
 float ran1(long *seed);
 float gammln(float xx);
 float bnldev(float pp, int n, long *idum);
-struct virus *step(struct virus popop[],struct virus *next_gen_p);
-
+void mutate(struct virus popop[]);
+struct virus *step(int rep, int t,struct virus popop[],struct virus *next_gen_p,FILE **fPointer);
+int intmin(int argc,int array[]); //min value of an integer array
+int intsum(int size,int a[]);
 
 int main(void) {
-	//initialize pop
-	struct virus pop[N0];
-	int N1 = N0*N1r;
-	int N2 = N0*(1-N1r);
-	for (int i=0;i<N1;i++){
-		pop[i].id = 1;
-		pop[i].k1 = 0;
-		pop[i].k2 = 0;
-		pop[i].k = 0;
-	}
-	for (int i=0;i<N2;i++){
-		pop[i+N1].id = 2;
-		pop[i+N1].k1 = 0;
-		pop[i+N1].k2 = 0;
-		pop[i+N1].k = 0;	
-	}
+	// set progress bar and initiate timer
 
-	// set progress bar, initiate csv file, and start timer
 
+
+	//initiate csv file
+	//// set up folder
+	char *dest2 = (char*) malloc(50*sizeof(char)); 
+	sprintf(dest2, "./data/%s", destination);
+	struct stat st = {0};
+	if (stat(dest2, &st) == -1) { // if the destination folder doesn't exist, make one with that name.
+    	mkdir(dest2, 0700);
+	}
+	//// initiate file
+	char *filename = (char*) malloc(100*sizeof(char));
+	sprintf(filename,"%s/c1.3s_%d,%d,%d,%.2f,%d,%d,%.5f,%d,%.2f,%.2f,%.2f(0).csv",dest2,back,rep,L,s,N0,K,mu,gen_num,cost,r,N1r);
+	int filenum  = 0;
+	while( access( filename, F_OK ) != -1 ) { // check if file exists and change the file number if it exists
+	    filenum += 1;
+		sprintf(filename,"%s/c1.3s_%d,%d,%d,%.2f,%d,%d,%.5f,%d,%.2f,%.2f,%.2f(%d).csv",dest2,back,rep,L,s,N0,K,mu,gen_num,cost,r,N1r,filenum);
+	}
+	FILE * fPointer;
+	fPointer = fopen(filename,"w");
+	free(dest2);
+	free(filename);
 
 	// simulation start
+	struct virus pop[N0];
+	int N1 = N0*N1r; // initial 1seg pop
+	int N2 = N0*(1-N1r); // initial 2seg pop
 	struct virus next_gen[N0];
 	struct virus *pop2;
+	if (timestep) {
+		fprintf(fPointer,"rep,t,pop1,pop2,k1,k2\n");
+	} else {
+		fprintf(fPointer,"pop1,pop2,k1,k2\n");
+	}
 	for (int repe=0; repe<rep; repe++){	
-		for (int i=0; i<10; i++){ // run through generation
-			mutate(pop);
-			pop2 = step(pop,&next_gen);
-			memcpy(pop,pop2,sizeof(struct virus)*N0); // cycle between pop and pop2 to continue looping.
-			printf("pop0 outside of step id:%d, k1:%d, k2:%d, k:%d\n",pop[0].id,pop[0].k1,pop[0].k2,pop[0].k);
-			printf("pop1 outside of step id:%d, k1:%d, k2:%d, k:%d\n",pop[1].id,pop[1].k1,pop[1].k2,pop[1].k);
-			printf("pop2 outside of step id:%d, k1:%d, k2:%d, k:%d\n",pop[2].id,pop[2].k1,pop[2].k2,pop[2].k);
-			printf("\n\n");
-			//record
+		// initialize pop
+		for (int i=0;i<N1;i++){
+			pop[i].id = 1;
+			pop[i].k1 = 0;
+			pop[i].k2 = 0;
+			pop[i].k = 0;
 		}
+		for (int i=0;i<N2;i++){
+			pop[i+N1].id = 2;
+			pop[i+N1].k1 = 0;
+			pop[i+N1].k2 = 0;
+			pop[i+N1].k = 0;	
+		}
+		printf("REP=%d\n",repe);
+		for (int gen=0; gen<gen_num; gen++){ // run through generation
+			printf("GEN=%d\n",gen);
+			mutate(pop);
+			pop2 = step((repe+1),(gen+1),pop,&next_gen,&fPointer);
+			memcpy(pop,pop2,sizeof(struct virus)*N0); // cycle between pop and pop2 to continue looping.
+		}
+	}
+	fclose(fPointer);
 	return 0;
 }
 
 
 
+struct virus *step(int rep, int t,struct virus popop[],struct virus *next_gen_p,FILE **fPointer) {
+	// goes through reproduction process
+	// the process is depicted at the top of the script.
+	// input: pop struct array
+	// output: next generation's pop struct array
+	int l = 0; // next gen length
+	int ks1[N0];
+	int ks1l = 0;
+	int ks2[N0];
+	int ks2l = 0;
+	while (l < N0) {
+		int s1 = floor(ran1(&seed)*N0); // sample 1
+		int s2 = floor(ran1(&seed)*N0); // sample 2
+		//printf("s1:%d k1:%d k2:%d k:%d\n",s1,popop[s1].k1,popop[s1].k2,popop[s1].k);
+		//printf("s2:%d k1:%d k2:%d k:%d\n",s2,popop[s2].k1,popop[s2].k2,popop[s2].k);
 
+		if (popop[s1].id == 1 || popop[s2].id == 1) { // either parents is segment 1
+			if (ran1(&seed) < 0.5) { // pick s1
+				if (ran1(&seed) < pow(1.0-s,popop[s1].k)){
+					next_gen_p[l].id = popop[s1].id;
+					next_gen_p[l].k1 = popop[s1].k1;
+					next_gen_p[l].k2 = popop[s1].k2;
+					next_gen_p[l].k = popop[s1].k;
+					if (next_gen_p[l].id == 1) {
+						ks1[ks1l] = next_gen_p[l].k;
+						ks1l += 1;
+					} else {
+						ks2[ks2l] = next_gen_p[l].k;
+						ks2l += 1;
+					}
+					l += 1;
+				}
+			} else { // pick s2
+				if (ran1(&seed) < pow(1.0-s,popop[s2].k)){
+					next_gen_p[l].id = popop[s2].id;
+					next_gen_p[l].k1 = popop[s2].k1;
+					next_gen_p[l].k2 = popop[s2].k2;
+					next_gen_p[l].k = popop[s2].k;
+					if (next_gen_p[l].id == 1) {
+						ks1[ks1l] = next_gen_p[l].k;
+						ks1l += 1;
+					} else {
+						ks2[ks2l] = next_gen_p[l].k;
+						ks2l += 1;
+					}					
+					l += 1;
+				}
+			}
+		} else { // both parents segment 2
+			if (ran1(&seed) < 0.5) { // pick k1 from s1 and k2 from s2
+				if (ran1(&seed) < pow(1.0-s,(popop[s1].k1 + popop[s2].k2))){
+					next_gen_p[l].id = popop[s1].id;
+					next_gen_p[l].k1 = popop[s1].k1;
+					next_gen_p[l].k2 = popop[s2].k2;
+					next_gen_p[l].k = popop[s1].k1 + popop[s2].k2;
+					ks2[ks2l] = next_gen_p[l].k;
+					ks2l += 1;
+					l += 1;
+				}
+			} else { // pick k1 from s2 and k2 from s1
+				if (ran1(&seed) < pow(1.0-s,(popop[s1].k2 + popop[s2].k1))){
+					next_gen_p[l].id = popop[s2].id;
+					next_gen_p[l].k1 = popop[s2].k1;
+					next_gen_p[l].k2 = popop[s1].k2;
+					next_gen_p[l].k = popop[s1].k2 + popop[s2].k1;
+					ks2[ks2l] = next_gen_p[l].k;
+					ks2l += 1;
+					l += 1;
+				}
+			}
+		}	
+	}
 
-
-
-
-
-
-
-
-void record(struct virus popop[]) {
-	if (timestep) {
-
+	if (krecord == 0){
+		float mk1;
+		float mk2;
+		if (ks1l == 0) {
+			mk1 = -1;
+		} else {
+			mk1 = (float)intsum(ks1l,ks1)/ks1l;				
+		}
+		if (ks2l == 0) {
+			mk2 = -1;
+		} else {
+			mk2 = (float)intsum(ks2l,ks2)/ks2l;
+		}
+		fprintf(*fPointer,"%d,%d,%d,%d,%.2f,%.2f\n",rep,t,ks1l,ks2l,mk1,mk2);			
+	} else if (krecord == 1) {
+		/*if (ks1l == 0){
+			char *k1str = "'NA'"
+		} else {
+			char *k1str	= (char *) malloc(N0*4*sizeof(char));
+		}
+		if (ks2l == 0){
+			char *k2str = "'NA'"
+		} else {
+			char *k2str = (char *) malloc(N0*4*sizeof(char));
+			ks2strl = 0;
+			for (int i=0; i<ks2l; i++) {
+				char *int2str = (char *) malloc(4);
+				sprintf(int2str,"%d",ks2[i]);
+				k2str[i] 
+			}
+		}
+		fprintf(fPointer,"",);*/
 	} else {
-
-	} 
+		int kmin1;
+		int kmin2;
+		if (ks1l == 0) {
+			kmin1 = -1;
+		} else {
+			kmin1 = intmin(ks1l,ks1);
+		} 
+		if (ks2l == 0) {
+			kmin2 = -1;
+		} else {
+			kmin2 = intmin(ks2l,ks2);
+		}
+		fprintf(*fPointer,"%d,%d,%d,%d,%d,%d\n",rep,t,ks1l,ks2l,kmin1,kmin2);
+	}	
+	return next_gen_p;
 }
-
-
 
 
 void mutate(struct virus popop[]) {
@@ -182,64 +315,6 @@ void mutate(struct virus popop[]) {
 		}
 	}
 }
-
-struct virus *step(struct virus popop[],struct virus *next_gen_p) {
-	// goes through reproduction process
-	// the process is depicted at the top of the script.
-	// input: pop struct array
-	// output: next generation's pop struct array
-	int l = 0; // next gen length
-	while (l < N0) {
-		int s1 = floor(ran1(&seed)*N0); // sample 1
-		int s2 = floor(ran1(&seed)*N0); // sample 2
-		//printf("s1:%d k1:%d k2:%d k:%d\n",s1,popop[s1].k1,popop[s1].k2,popop[s1].k);
-		//printf("s2:%d k1:%d k2:%d k:%d\n",s2,popop[s2].k1,popop[s2].k2,popop[s2].k);
-		if (popop[s1].id == 1 || popop[s2].id == 1) { // either parents is segment 1
-			if (ran1(&seed) < 0.5) { // pick s1
-				if (ran1(&seed) < pow(1.0-s,popop[s1].k)){
-					next_gen_p[l].id = popop[s1].id;
-					next_gen_p[l].k1 = popop[s1].k1;
-					next_gen_p[l].k2 = popop[s1].k2;
-					next_gen_p[l].k = popop[s1].k;
-					l += 1;
-				}
-			} else { // pick s2
-				if (ran1(&seed) < pow(1.0-s,popop[s2].k)){
-					next_gen_p[l].id = popop[s2].id;
-					next_gen_p[l].k1 = popop[s2].k1;
-					next_gen_p[l].k2 = popop[s2].k2;
-					next_gen_p[l].k = popop[s2].k;
-					l += 1;
-				}
-			}
-		} else { // both parents segment 2
-			if (ran1(&seed) < 0.5) { // pick k1 from s1 and k2 from s2
-				if (ran1(&seed) < pow(1.0-s,(popop[s1].k1 + popop[s2].k2))){
-					next_gen_p[l].id = popop[s1].id;
-					next_gen_p[l].k1 = popop[s1].k1;
-					next_gen_p[l].k2 = popop[s2].k2;
-					next_gen_p[l].k = popop[s1].k;
-					l += 1;
-				}
-			} else { // pick k1 from s2 and k2 from s1
-				if (ran1(&seed) < pow(1.0-s,(popop[s1].k2 + popop[s2].k1))){
-					next_gen_p[l].id = popop[s2].id;
-					next_gen_p[l].k1 = popop[s2].k1;
-					next_gen_p[l].k2 = popop[s1].k2;
-					next_gen_p[l].k = popop[s2].k;
-					l += 1;
-				}
-			}
-		}
-	}
-	printf("pop0 inside of step id:%d, k1:%d, k2:%d, k:%d\n",next_gen_p[0].id,next_gen_p[0].k1,next_gen_p[0].k2,next_gen_p[0].k);
-	printf("pop1 inside of step id:%d, k1:%d, k2:%d, k:%d\n",next_gen_p[1].id,next_gen_p[1].k1,next_gen_p[1].k2,next_gen_p[1].k);
-	printf("pop2 inside of step id:%d, k1:%d, k2:%d, k:%d\n",next_gen_p[2].id,next_gen_p[2].k1,next_gen_p[2].k2,next_gen_p[2].k);
-	printf("\n\n");
-	return next_gen_p;
-}
-
-
 
 
 
@@ -359,3 +434,23 @@ float bnldev(float pp, int n,long *idum)
 	return bnl;
 }
 #undef PI
+
+int intmin(int argc, int array[]){
+  int min_num = array[0];
+  int i;
+  for(i=1;i<argc;i++){
+    if(array[i]<min_num){
+      min_num = array[i];
+    }
+  }
+  return min_num;
+}
+
+int intsum(int size,int a[]){
+  int i;
+  int sum = 0;
+  for(i=0; i<size; i++){
+    sum += a[i];
+  }
+  return sum;
+}
