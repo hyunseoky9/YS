@@ -1,4 +1,4 @@
-# Influenza Competition model 1.2.2
+# Influenza Competition model 1.2
 # Same concept as comp model 1 but more efficient. 
 # Some key differences:
 # - back mutation, tracking info, and program cut strategy parameterized.
@@ -79,7 +79,7 @@ class Virus1():
                     self.k -= 1 # back mutation
                 else:
                     self.k += 1 # normal mutation
-            self.w = (1 - s)**self.k
+        self.w = (1 - s)**self.k
 
                     
 class Virus2():
