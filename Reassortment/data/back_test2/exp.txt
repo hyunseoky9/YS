@@ -1,5 +1,11 @@
-this one is same as back_test, but it has revised mutation function,
-where w is updated after a round of mutation and that updated w is
-reflected during reproduction proces..
+this one records the mean k of seg1 and seg2.
+the records are:
+-seg1 with no back mutation
+-seg1 with back mutation
+-seg2 with no back mutation
+-seg2 with back mutation
+for each, mu ranges from 0.0002 to 0.0012
 
-done with comp1.2.2.py
+
+
+done with comp1.2.py

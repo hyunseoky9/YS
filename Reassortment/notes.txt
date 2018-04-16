@@ -1,18 +1,5 @@
 Todo:
 check if 1.2 follow f0 eq when there's no mutation for 1 segment and 2 segment
-
-- see if smaller population allows no back mutation model to resist muller's ratchet effect.
-
-- track only ratios of k (f0, f1, f2, etc.)
-
-- make wf model. comp1.3?
-
-- read all relevent papers downloaded on 3.29
-
-- change starting ratio, when the params are set for 2seg winning.
-
-- check if, on the turn of the next ratchet, the next least loaded class is 1.6*n0 (look at 1segements). See if the timing of approaching 1.6*n0 gets slower with smaller n0 and s. 
-
 - try parallelizing the 1.2 version.
 
 File nomenclature:
@@ -21,11 +8,5 @@ param order: rep,L,s,N0,K,mu,gen_num,cost,r
 
 
 Comments/findings:
-
-- as ratio of 1seg:2seg gets to around 7:3, 1segments start to win with mutation rate 0.005.
-
-- with mutation 0.0006, no back mutation model goes to average of k=12, whereas back mutation model goes to average of only k=2.5
-
-- with no back, the ratio of wins tend to be 550/330 (seg1/seg2).... (from win_ratio data) what does this mean?
 
 - 1.3 slower than 1.2 because it has to make 1000 indivs (and even more sampling) every generation.	

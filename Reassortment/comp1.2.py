@@ -217,7 +217,7 @@ if len(sys.argv) > 1:
 if destination not in os.listdir('./data'):
     os.system('mkdir ./data/' + destination)
 params = '%d,%d,%d,%.2f,%d,%d,%.5f,%d,%.2f,%.2f,%.2f'%(back,rep,L,s,N0,K,mu,gen_num,cost,r,N1r)
-tail = 'c1.2.2s_%s(0).csv'%(params)
+tail = 'c1.2s_%s(0).csv'%(params)
 while tail in os.listdir('./data/'+destination):
     lastnum = int(tail[-6])
     tail = tail[0:-6] + str(lastnum+1) + tail[-5::] 
