@@ -36,23 +36,7 @@
  rep = repetition amount
  N1r = ratio of 1segment virus
 */
-/*
-int back = 0;
-	int timestep = 0;
-	int krecord = 2;
-	char *destination = "ctest";
-	int rep = 3;
-	int L = 300;
-	double s = 0.05;
-	int N0 = 50;
-	int K = 1000;
-	float mu = 0.005;
-	int gen_num = 10;
-	double cost = 0.00;
-	double r = 0.5;
-	double N1r = 0;
-*/
-
+// seed value
 long seed = -1;
 // virus basic structure
 struct virus {
@@ -66,8 +50,8 @@ struct virus {
 float ran1(long *seed);
 float gammln(float xx);
 float bnldev(float pp, int n, long *idum);
-void mutate(int back, int N0, double mu, int L, struct virus popop[]);
-struct virus *step(int rep, int t, int N0, int L, int timestep, int krecord, double s, int K, double mu, double r,struct virus popop[],struct virus *next_gen_p,FILE **fPointer);
+void mutate(long seed, int back, int N0, double mu, int L, struct virus popop[]);
+struct virus *step(long seed, int rep, int t, int N0, int L, int timestep, int krecord, double s, int K, double mu, double r,struct virus popop[],struct virus *next_gen_p,FILE **fPointer);
 int intmin(int argc,int array[]); //min value of an integer array
 int intsum(int size,int a[]);
 
@@ -92,6 +76,7 @@ int main(int argc, char *argv[]) {
 	char *cost_s = argv[12];
 	char *r_s = argv[13];
 	char *N1r_s = argv[14];
+	char *seed_s = argv[15];
 	char *end1;
 
 	int back = (int) strtol(back_s,&end1,10);
@@ -107,6 +92,7 @@ int main(int argc, char *argv[]) {
 	double cost = (double) strtof(cost_s,NULL);
 	double r = (double) strtof(r_s,NULL);
 	double N1r = (double) strtof(N1r_s,NULL);
+	long seed = strtol(seed_s,&end1,10);
 
 	printf("back=%d, timestep=%d, krecord=%d, rep=%d, L=%d, s=%.2f, N0=%d, K=%d, mu=%.5f, gen_num=%d, cost=%.2f, r=%.2f, N1r=%.2f", back, timestep, krecord, rep, L, s, N0, K, mu, gen_num, cost, r, N1r);
 
@@ -162,8 +148,8 @@ int main(int argc, char *argv[]) {
 		printf("REP=%d/%d\n",repe,rep);
 		for (int gen=0; gen<gen_num; gen++){ // run through generation
 			//printf("GEN=%d/%d\n",gen,gen_num);
-			mutate(back,N0,mu,L,pop);
-			pop2 = step((repe+1),(gen+1),N0,L,timestep,krecord,s,K,mu,r,pop,&next_gen,&fPointer);
+			mutate(seed,back,N0,mu,L,pop);
+			pop2 = step(seed,(repe+1),(gen+1),N0,L,timestep,krecord,s,K,mu,r,pop,&next_gen,&fPointer);
 			memcpy(pop,pop2,sizeof(struct virus)*N0); // cycle between pop and pop2 to continue looping.
 		}
 	}
@@ -172,14 +158,14 @@ int main(int argc, char *argv[]) {
 	fclose(fPointer);
 	clock_t end = clock();
 	double time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
-	printf("time spent was %.2f minutes", time_spent/60.0);
+	printf("time spent was %.2f minutes\n", time_spent/60.0);
 
 	return 0;
 
 }
 
 
-struct virus *step(int rep, int t, int N0, int L, int timestep, int krecord, double s, int K, double mu, double r,struct virus popop[],struct virus *next_gen_p,FILE **fPointer) {
+struct virus *step(long seed, int rep, int t, int N0, int L, int timestep, int krecord, double s, int K, double mu, double r,struct virus popop[],struct virus *next_gen_p,FILE **fPointer) {
 //struct virus *step(int rep, int t,struct virus popop[],struct virus *next_gen_p,FILE **fPointer) {
 	// goes through reproduction process
 	// the process is depicted at the top of the script.
@@ -329,7 +315,7 @@ struct virus *step(int rep, int t, int N0, int L, int timestep, int krecord, dou
 }
 
 
-void mutate(int back, int N0, double mu, int L, struct virus popop[]) {
+void mutate(long seed, int back, int N0, double mu, int L, struct virus popop[]) {
 	// goes through population and make every inidividual go through 
 	// mutation process.
 	// input: population struct array.

@@ -3,6 +3,7 @@
 from os import system as cd
 import sys
 import numpy as np
+seed = np.random.randint(-9223372036854775808,-1)
 back = [0,1]
 timestep = 1
 krecord = 0 #  2= smallest k of the subpop. 1= all indiv's k. 0=mean k.
@@ -17,7 +18,7 @@ gen_num = 500
 cost = 0
 r = 0.5
 N1r = [0,1]
-destination = 'back_test2_1.3c'
+destination = 'back_test2_1.3py'
 file2run = sys.argv[1]
 version = file2run[4:7]
 
@@ -36,9 +37,9 @@ for j in range(len(back)):
 				cd('python %s %s'%(file2run, params))
 			else: # file is .c
 				cd('gcc -Wall %s -o cfile -lm'%(file2run))
-				cd('./cfile %s'%(params))
+				cd('./cfile %s %d'%(params, seed))
 			count += 1
-			print("%d/%d DONE"%(count, len(mu)*len(back)*len(N1r)))
+			print("%d/%d DONE\n"%(count, len(mu)*len(back)*len(N1r)))
 
 #elif version == '1.3':
 #	params = '%s %d %d %d %d %f %d %d %.5f %d %f %f %f'%(destination,back,timestep,krecord,

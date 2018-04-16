@@ -146,42 +146,76 @@ class Virus2():
             
 
 def step(pop):
-	next_gen = []
-	popsize = [0,0]
-	samplenum = 0
-	while len(next_gen) < N0:
-		sample = np.random.choice(pop, 2, replace=False)
-		samplenum += 1
-		if sample[0].id == 1 or sample[1].id == 1:
-			if np.random.uniform(0,1) < 0.5: # sample 0 or 1
-				if np.random.uniform(0,1) < (1-s)**sample[0].k: # progeny live or die
-					if sample[0].id == 1:
-						next_gen.append(Virus1(sample[0].k))
-						popsize[0] += 1
-					else:
-						next_gen.append(Virus2(sample[0].k1,sample[0].k2))
-						popsize[1] += 1
-			else:
-				if np.random.uniform(0,1) < (1-s)**sample[1].k:
-					if sample[1].id == 1:
-						next_gen.append(Virus1(sample[1].k))
-						popsize[0] += 1
-					else:
-						next_gen.append(Virus2(sample[1].k1,sample[1].k2))
-						popsize[1] += 1
-		elif sample[0].id == 2 and sample[1].id == 2:
-			if np.random.uniform(0,1) < 0.5:
-				if np.random.uniform(0,1) < (1-s)**(sample[0].k1+sample[1].k2):
-					next_gen.append(Virus2(sample[0].k1,sample[1].k2))
-					popsize[1] += 1
-			else:
-				if np.random.uniform(0,1) < (1-s)**(sample[0].k2+sample[1].k1):
-					next_gen.append(Virus2(sample[0].k2,sample[1].k1))
-					popsize[1] += 1
-	print('sampling #:',samplenum)
-	if np.sum(popsize) != N0:
-		raise ValueError('popsize doesn\'t add up to N0!! sum=%s'%(next_gen))
-	return next_gen, popsize
+    next_gen = []
+    popsize = [0,0]
+    samplenum = 0
+    ks1 = []
+    ks2 = []
+    while len(next_gen) < N0:
+        sample = np.random.choice(pop, 2, replace=False)
+        samplenum += 1
+        if sample[0].id == 1 or sample[1].id == 1:
+            if np.random.uniform(0,1) < 0.5: # sample 0 or 1
+                if np.random.uniform(0,1) < (1-s)**sample[0].k: # progeny live or die
+                    if sample[0].id == 1:
+                        next_gen.append(Virus1(sample[0].k))
+                        ks1.append(sample[0].k)
+                        popsize[0] += 1
+                    else:
+                        next_gen.append(Virus2(sample[0].k1,sample[0].k2))
+                        popsize[1] += 1
+                        ks2.append(sample[0].k)
+            else:
+                if np.random.uniform(0,1) < (1-s)**sample[1].k:
+                    if sample[1].id == 1:
+                        next_gen.append(Virus1(sample[1].k))
+                        ks1.append(sample[1].k)
+                        popsize[0] += 1
+                    else:
+                        next_gen.append(Virus2(sample[1].k1,sample[1].k2))
+                        ks2.append(sample[1].k)
+                        popsize[1] += 1
+        elif sample[0].id == 2 and sample[1].id == 2:
+            if np.random.uniform(0,1) < 0.5:
+                if np.random.uniform(0,1) < (1-s)**(sample[0].k1+sample[1].k2):
+                    next_gen.append(Virus2(sample[0].k1,sample[1].k2))
+                    ks2.append(sample[0].k1 + sample[1].k2)
+                    popsize[1] += 1
+            else:
+                if np.random.uniform(0,1) < (1-s)**(sample[0].k2+sample[1].k1):
+                    next_gen.append(Virus2(sample[0].k2,sample[1].k1))
+                    popsize[1] += 1
+                    ks2.append(sample[0].k2 + sample[1].k1)
+    # recording k
+    if krecord == 1:                    
+        if len(ks1) == 0:
+            ks1.append('NA')
+        if len(ks2) == 0:
+            ks2.append('NA')
+        ks1 = str(ks1).replace(', ','.')[1:-1]
+        ks2 = str(ks2).replace(', ','.')[1:-1]
+        fh.write('%d,%d,%d,%d,%s,%s\n'%(repe+1,gen+1,popsize[0],popsize[1],ks1,ks2))
+    elif krecord == 0:
+        if len(ks1) == 0:
+            ks1 = -1
+        else:
+            ks1 = np.mean(np.array(ks1))
+        if len(ks2) == 0:
+            ks2 = -1
+        else:
+            ks2 = np.mean(np.array(ks2))
+        fh.write('%d,%d,%d,%d,%.2f,%.2f\n'%(repe+1,gen+1,popsize[0],popsize[1],ks1,ks2))
+    elif krecord == 2:
+        if len(ks1) == 0:
+            ks1 = -1
+        else:
+            ks1 = int(np.min(np.array(ks1)))
+        if len(ks2) == 0:
+            ks2 = -1
+        else:
+            ks2 = int(np.min(np.array(ks2)))
+        fh.write('%d,%d,%d,%d,%d,%d\n'%(repe+1,gen+1,popsize[0],popsize[1],ks1, ks2))
+    return next_gen, popsize
 
 
 start = timeit.default_timer() # timer start
@@ -219,43 +253,7 @@ if timestep:
             for i in range(len(pop)):
                 pop[i].mutate()
             pop, popsize = step(pop)
-            print('gennum:%d'%(gen))
-            # recording k
-            ks1 = [] # k's for each virus in a subpop
-            ks2 = []
-            for i in range(len(pop)):
-                if pop[i].id == 1:
-                    ks1.append(pop[i].k)
-                else:
-                    ks2.append(pop[i].k)
-            if krecord == 1:                	
-                if len(ks1) == 0:
-                    ks1.append('NA')
-                if len(ks2) == 0:
-                    ks2.append('NA')
-                ks1 = str(ks1).replace(', ','.')[1:-1]
-                ks2 = str(ks2).replace(', ','.')[1:-1]
-                fh.write('%d,%d,%d,%d,%s,%s\n'%(repe+1,gen+1,popsize[0],popsize[1],ks1,ks2))
-            elif krecord == 0:
-                if len(ks1) == 0:
-                    ks1 = -1
-                else:
-                    ks1 = np.mean(np.array(ks1))
-                if len(ks2) == 0:
-                    ks2 = -1
-                else:
-                    ks2 = np.mean(np.array(ks2))
-                fh.write('%d,%d,%d,%d,%.2f,%.2f\n'%(repe+1,gen+1,popsize[0],popsize[1],ks1,ks2))
-            elif krecord == 2:
-                if len(ks1) == 0:
-                    ks1 = -1
-                else:
-                    ks1 = int(np.min(np.array(ks1)))
-                if len(ks2) == 0:
-                	ks2 = -1
-                else:
-                	ks2 = int(np.min(np.array(ks2)))
-                fh.write('%d,%d,%d,%d,%d,%d\n'%(repe+1,gen+1,popsize[0],popsize[1],ks1, ks2))
+            # print('gennum:%d'%(gen))
         bar.next()
 
 else:

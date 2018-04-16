@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <time.h>
 struct virus{
 	int id;
 	int k1;
@@ -14,12 +15,12 @@ float ran1(long *idum);
 float gammln(float xx);
 float bnldev(float pp, int n, long *idum);
 
-int main(void)
+int main(int argc, char *argv[])
 {
-    // This program will create same sequence of 
-    // random numbers on every program run 
-	char *destination = "test";
-	printf("%s",destination);
+
+	for (int i=0; i<20; i++) {
+		printf("\rwhat the hell%d",i);
+	}
 	return 0;
 
 }	 	
