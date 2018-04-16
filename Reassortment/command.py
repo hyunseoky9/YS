@@ -27,8 +27,11 @@ for i in range(len(mu)):
 	elif version == '1.3':
 		params = '%s %d %d %d %d %d %f %d %d %.5f %d %f %f %f'%(destination,back,timestep,krecord,
 																rep,L,s,N0,K,mu[i],gen_num,cost,r,N1r)
-	cd('python %s %s'%(file2run, params))
-
+	if file2run[-1] == "y": # file is .py
+		cd('python %s %s'%(file2run, params))
+	else: # file is .c
+		cd('gcc -Wall %s -o cfile -lm'%(file2run))
+		cd('./cfile %s'%(params))
 
 #for j in range(len(mu)):
 #	for i in range(len(N1r)):

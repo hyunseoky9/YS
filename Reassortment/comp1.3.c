@@ -20,6 +20,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <time.h>
 /*
  Parameters
  back = whether the simulation allows back mutation (1 if there's one. 0 if there isn't)
@@ -35,23 +36,25 @@
  rep = repetition amount
  N1r = ratio of 1segment virus
 */
-
+/*
 int back = 0;
-int timestep = 0;
-int krecord = 2;
-char *destination = "ctest";
-int rep = 3;
-int L = 300;
-double s = 0.05;
-int N0 = 50;
-int K = 1000;
-float mu = 0.005;
-int gen_num = 10;
-double cost = 0.00;
-double r = 0.5;
-double N1r = 0;
-long seed = -1;
+	int timestep = 0;
+	int krecord = 2;
+	char *destination = "ctest";
+	int rep = 3;
+	int L = 300;
+	double s = 0.05;
+	int N0 = 50;
+	int K = 1000;
+	float mu = 0.005;
+	int gen_num = 10;
+	double cost = 0.00;
+	double r = 0.5;
+	double N1r = 0;
+*/
 
+long seed = -1;
+// virus basic structure
 struct virus {
 	int id;
 	int k1;
@@ -63,13 +66,49 @@ struct virus {
 float ran1(long *seed);
 float gammln(float xx);
 float bnldev(float pp, int n, long *idum);
-void mutate(struct virus popop[]);
-struct virus *step(int rep, int t,struct virus popop[],struct virus *next_gen_p,FILE **fPointer);
+void mutate(int back, int N0, double mu, int L, struct virus popop[]);
+struct virus *step(int rep, int t, int N0, int L, int timestep, int krecord, double s, int K, double mu, double r,struct virus popop[],struct virus *next_gen_p,FILE **fPointer);
 int intmin(int argc,int array[]); //min value of an integer array
 int intsum(int size,int a[]);
 
-int main(void) {
+int main(int argc, char *argv[]) {
 	// set progress bar and initiate timer
+	clock_t begin = clock();
+
+	// call in parameters
+
+
+	char *destination = argv[1];
+	char *back_s = argv[2];
+	char *timestep_s = argv[3];
+	char *krecord_s = argv[4];
+	char *rep_s = argv[5];
+	char *L_s = argv[6];
+	char *s_s = argv[7];
+	char *N0_s = argv[8];
+	char *K_s = argv[9];
+	char *mu_s = argv[10];
+	char *gen_num_s = argv[11];
+	char *cost_s = argv[12];
+	char *r_s = argv[13];
+	char *N1r_s = argv[14];
+	char *end1;
+
+	int back = (int) strtol(back_s,&end1,10);
+	int timestep = (int) strtol(timestep_s,&end1,10);
+	int krecord = (int) strtol(krecord_s, &end1, 10);
+	int rep = (int) strtol(rep_s,&end1,10);
+	int L = (int) strtol(L_s,&end1,10);
+	double s = (double) strtof(s_s, NULL);
+	int N0 = (int) strtol(N0_s,&end1,10);
+	int K = (int) strtol(K_s,&end1,10);
+	double mu = (double) strtof(mu_s,NULL);
+	int gen_num = (int) strtol(gen_num_s,&end1,10);
+	double cost = (double) strtof(cost_s,NULL);
+	double r = (double) strtof(r_s,NULL);
+	double N1r = (double) strtof(N1r_s,NULL);
+
+	printf("back=%d, timestep=%d, krecord=%d, rep=%d, L=%d, s=%.2f, N0=%d, K=%d, mu=%.5f, gen_num=%d, cost=%.2f, r=%.2f, N1r=%.2f", back, timestep, krecord, rep, L, s, N0, K, mu, gen_num, cost, r, N1r);
 
 
 
@@ -119,21 +158,29 @@ int main(void) {
 			pop[i+N1].k2 = 0;
 			pop[i+N1].k = 0;	
 		}
-		printf("REP=%d\n",repe);
+		
+		printf("REP=%d/%d\n",repe,rep);
 		for (int gen=0; gen<gen_num; gen++){ // run through generation
-			printf("GEN=%d\n",gen);
-			mutate(pop);
-			pop2 = step((repe+1),(gen+1),pop,&next_gen,&fPointer);
+			//printf("GEN=%d/%d\n",gen,gen_num);
+			mutate(back,N0,mu,L,pop);
+			pop2 = step((repe+1),(gen+1),N0,L,timestep,krecord,s,K,mu,r,pop,&next_gen,&fPointer);
 			memcpy(pop,pop2,sizeof(struct virus)*N0); // cycle between pop and pop2 to continue looping.
 		}
 	}
+
+	// close file and timer
 	fclose(fPointer);
+	clock_t end = clock();
+	double time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
+	printf("time spent was %.2f minutes", time_spent/60.0);
+
 	return 0;
+
 }
 
 
-
-struct virus *step(int rep, int t,struct virus popop[],struct virus *next_gen_p,FILE **fPointer) {
+struct virus *step(int rep, int t, int N0, int L, int timestep, int krecord, double s, int K, double mu, double r,struct virus popop[],struct virus *next_gen_p,FILE **fPointer) {
+//struct virus *step(int rep, int t,struct virus popop[],struct virus *next_gen_p,FILE **fPointer) {
 	// goes through reproduction process
 	// the process is depicted at the top of the script.
 	// input: pop struct array
@@ -182,27 +229,52 @@ struct virus *step(int rep, int t,struct virus popop[],struct virus *next_gen_p,
 				}
 			}
 		} else { // both parents segment 2
-			if (ran1(&seed) < 0.5) { // pick k1 from s1 and k2 from s2
-				if (ran1(&seed) < pow(1.0-s,(popop[s1].k1 + popop[s2].k2))){
-					next_gen_p[l].id = popop[s1].id;
-					next_gen_p[l].k1 = popop[s1].k1;
-					next_gen_p[l].k2 = popop[s2].k2;
-					next_gen_p[l].k = popop[s1].k1 + popop[s2].k2;
-					ks2[ks2l] = next_gen_p[l].k;
-					ks2l += 1;
-					l += 1;
+			if (ran1(&seed)<r) { // recombination happens
+				if (ran1(&seed) < 0.5) { // pick k1 from s1 and k2 from s2
+					if (ran1(&seed) < pow(1.0-s,(popop[s1].k1 + popop[s2].k2))){
+						next_gen_p[l].id = popop[s1].id;
+						next_gen_p[l].k1 = popop[s1].k1;
+						next_gen_p[l].k2 = popop[s2].k2;
+						next_gen_p[l].k = popop[s1].k1 + popop[s2].k2;
+						ks2[ks2l] = next_gen_p[l].k;
+						ks2l += 1;
+						l += 1;
+					}
+				} else { // pick k1 from s2 and k2 from s1
+					if (ran1(&seed) < pow(1.0-s,(popop[s1].k2 + popop[s2].k1))){
+						next_gen_p[l].id = popop[s2].id;
+						next_gen_p[l].k1 = popop[s2].k1;
+						next_gen_p[l].k2 = popop[s1].k2;
+						next_gen_p[l].k = popop[s1].k2 + popop[s2].k1;
+						ks2[ks2l] = next_gen_p[l].k;
+						ks2l += 1;
+						l += 1;
+					}
 				}
-			} else { // pick k1 from s2 and k2 from s1
-				if (ran1(&seed) < pow(1.0-s,(popop[s1].k2 + popop[s2].k1))){
-					next_gen_p[l].id = popop[s2].id;
-					next_gen_p[l].k1 = popop[s2].k1;
-					next_gen_p[l].k2 = popop[s1].k2;
-					next_gen_p[l].k = popop[s1].k2 + popop[s2].k1;
-					ks2[ks2l] = next_gen_p[l].k;
-					ks2l += 1;
-					l += 1;
+			} else { // recombintion doesn't happen
+				if (ran1(&seed) < 0.5) { // pick s1
+					if (ran1(&seed) < pow(1.0-s,popop[s1].k)){
+						next_gen_p[l].id = popop[s1].id;
+						next_gen_p[l].k1 = popop[s1].k1;
+						next_gen_p[l].k2 = popop[s1].k2;
+						next_gen_p[l].k = popop[s1].k;
+						ks2[ks2l] = next_gen_p[l].k;
+						ks2l += 1;
+						l += 1;
+					}
+				} else { // pick s2
+					if (ran1(&seed) < pow(1.0-s,popop[s2].k)){
+						next_gen_p[l].id = popop[s2].id;
+						next_gen_p[l].k1 = popop[s2].k1;
+						next_gen_p[l].k2 = popop[s2].k2;
+						next_gen_p[l].k = popop[s2].k;
+						ks2[ks2l] = next_gen_p[l].k;
+						ks2l += 1;				
+						l += 1;
+					}
 				}
-			}
+
+			}	
 		}	
 	}
 
@@ -257,7 +329,7 @@ struct virus *step(int rep, int t,struct virus popop[],struct virus *next_gen_p,
 }
 
 
-void mutate(struct virus popop[]) {
+void mutate(int back, int N0, double mu, int L, struct virus popop[]) {
 	// goes through population and make every inidividual go through 
 	// mutation process.
 	// input: population struct array.
