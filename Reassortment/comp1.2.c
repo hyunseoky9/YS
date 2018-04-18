@@ -242,9 +242,9 @@ struct virus1 *step1(long *seed, int rep, int t, int *N1, int N, int L, int time
 		printf("WARNINGWARNINGWARNINGWARNINGWARNINGWARNINGWARNINGWARNINGWARNINGWARNINGWARNINGWARNINGWARNINGWARNING\n");
 		printf("WARNINGWARNINGWARNINGWARNINGWARNINGWARNINGWARNINGWARNINGWARNINGWARNINGWARNINGWARNINGWARNINGWARNING\n");
 	}
-	//for (int i=0; i<l; i++) {
-	//	printf("pop%d has k=%d\n",i,next_gen_p[i].k);
-	//}
+	for (int i=0; i<l; i++) {
+		printf("pop%d has k=%d\n",i,next_gen_p[i].k);
+	}
 	N1[0] = l;	
 	return next_gen_p;
 }
