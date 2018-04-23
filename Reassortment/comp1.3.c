@@ -128,15 +128,16 @@ int main(int argc, char *argv[]) {
 	} else {
 		fprintf(fPointer,"pop1,pop2,k1,k2\n");
 	}
-	for (int repe=0; repe<rep; repe++){	
+	int i,repe,gen;
+	for (repe=0; repe<rep; repe++){	
 		// initialize pop
-		for (int i=0;i<N1;i++){
+		for (i=0;i<N1;i++){
 			pop[i].id = 1;
 			pop[i].k1 = 0;
 			pop[i].k2 = 0;
 			pop[i].k = 0;
 		}
-		for (int i=0;i<N2;i++){
+		for (i=0;i<N2;i++){
 			pop[i+N1].id = 2;
 			pop[i+N1].k1 = 0;
 			pop[i+N1].k2 = 0;
@@ -144,7 +145,7 @@ int main(int argc, char *argv[]) {
 		}
 		
 		printf("REP=%d/%d\n",repe,rep);
-		for (int gen=0; gen<gen_num; gen++){ // run through generation
+		for (gen=0; gen<gen_num; gen++){ // run through generation
 			//printf("GEN=%d/%d\n",gen,gen_num);
 			mutate(&seed,back,N0,mu,L,pop);
 			pop2 = step(&seed,(repe+1),(gen+1),N0,L,timestep,krecord,s,K,mu,r,pop,next_gen,&fPointer);
@@ -316,20 +317,21 @@ void mutate(long *seed, int back, int N0, double mu, int L, struct virus popop[]
 	// input: population struct array.
 	// output: population struct with updated k values according to
 	//   mutation rate.
-	for (int i=0;i<N0; i++){
-		int mut_num = bnldev(mu,L,seed); // binomial pick of number of mutation based on mu.
+	int i,j,mut_num,breakpt;
+	for (i=0;i<N0; i++){
+		mut_num = bnldev(mu,L,seed); // binomial pick of number of mutation based on mu.
 		if (back == 1){ // back mutation
 			if (popop[i].id == 1) { // individual is 1segment
-				for (int i=0; i<mut_num; i++) { // add or subtract k
-					if (ran1(seed) < popop[i].k/L) { // k/L is the probability of back mutating.
+				for (j=0; j<mut_num; j++) { // add or subtract k
+					if (ran1(seed)*L < popop[i].k) { // k/L is the probability of back mutating.
 						popop[i].k -= 1;
 					} else {
 						popop[i].k += 1;
 					}
 				}
 			} else { // individual is 2segment
-				for (int i=0; i<mut_num; i++) { // add or subtract k1 or k2, and k.
-					if (ran1(seed) < popop[i].k/L) {
+				for (j=0; j<mut_num; j++) { // add or subtract k1 or k2, and k.
+					if (ran1(seed)*L < popop[i].k) {
 						if (popop[i].k1==0) {
 							popop[i].k2 -= 1;
 							popop[i].k -= 1;
@@ -360,7 +362,7 @@ void mutate(long *seed, int back, int N0, double mu, int L, struct virus popop[]
 			if (popop[i].id == 1) {
 				popop[i].k += mut_num;
 			} else {
-				int breakpt = floor(ran1(seed)*(mut_num+1));
+				breakpt = floor(ran1(seed)*(mut_num+1));
 				popop[i].k1 += breakpt;
 				popop[i].k2 += mut_num - breakpt;
 				popop[i].k = popop[i].k1 + popop[i].k2;
