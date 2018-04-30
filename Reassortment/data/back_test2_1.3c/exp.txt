@@ -1,3 +1,0 @@
-same as back test from comp1.2.2 model except that now it's done with comp1.3.
-This one is done with c script.
-
