@@ -1,0 +1,2 @@
+This set of data is run by comp1.2.c.
+with or without back mutation, varying mutation (0.0002-0.0012), and varying 1 to 2 segment ratio (0.1-0.9)

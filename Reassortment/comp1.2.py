@@ -106,11 +106,10 @@ class Virus2():
         """
         mut_num = int(np.random.binomial(L, mu)) # number of mutation
         if not back:
-            split_pt = int(np.ceil(np.random.uniform(0,1)*mut_num)) # how much of the mutation segment1 is getting
+            split_pt = int(np.floor(np.random.uniform(0,1)*(mut_num+1))) # how much of the mutation segment1 is getting
             self.k1 += split_pt
             self.k2 += mut_num - split_pt
             self.k = self.k1 + self.k2
-            self.w = (1 - s)**self.k - cost
         else:
             for i in range(mut_num):
                 p = np.random.uniform(0,1)
@@ -135,7 +134,8 @@ class Virus2():
                     else: # seg2
                         self.k2 += 1
                         self.k += 1
-            self.w = (1 - s)**self.k
+        
+        self.w = (1 - s)**self.k
 
 def reproduce(viruses1, viruses2):
     """
@@ -164,7 +164,7 @@ def reproduce(viruses1, viruses2):
         offspring1, offspring2 = reassort(viruses2[samp[0]], viruses2[samp[1]])
         next_gen2.append(offspring1)
         next_gen2.append(offspring2)
-        viruses2[samp[0]].progeny_n -= 1
+        viruses2[samp[0]].progeny_n -= 1 # subtract one progeny from each parents progeny #.
         viruses2[samp[1]].progeny_n -= 1
         if viruses2[samp[0]].progeny_n == 0: # remove index from remaining if progeny_n is 0.
             del remaining[np.where(np.array(remaining)==samp[0])[0][0]]
@@ -261,7 +261,7 @@ if timestep:
             viruses1, viruses2 = reproduce(viruses1,viruses2)
 
             # get kmean for each subpop
-            if not int(krecord):
+            if not krecord:
                 ks = [] # k's for each virus in a subpop
                 if len(viruses1)>0:
                     for i in range(len(viruses1)):
@@ -278,7 +278,7 @@ if timestep:
                     k_means2 = -1
 
                 fh.write('%d,%d,%d,%d,%.2f,%.2f\n'%(repe+1,gen+1,len(viruses1),len(viruses2),k_means1, k_means2))
-            elif int(krecord) == 1:
+            elif krecord == 1:
                 ks1 = [] # k's for each virus in a subpop
                 if len(viruses1)>0:
                     for i in range(len(viruses1)):

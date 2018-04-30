@@ -34,3 +34,20 @@ cost = 0
 r = 0.5
 N1r = 1
 
+
+
+
+back = 1
+timestep = 1
+krecord = 0 #  2= smallest k of the subpop. 1= all indiv's k. 0=mean k.
+untilext = 0
+rep = 100
+L = 300
+s = 0.05
+N0 = 1000
+K = 1000
+mu = 0.0006
+gen_num = 500
+cost = 0
+r = 0.5
+N1r = 1

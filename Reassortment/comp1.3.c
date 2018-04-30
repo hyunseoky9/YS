@@ -174,9 +174,10 @@ struct virus *step(long *seed, int rep, int t, int N0, int L, int timestep, int 
 	int ks1l = 0;
 	int ks2[N0];
 	int ks2l = 0;
+	int s1, s2;
 	while (l < N0) {
-		int s1 = floor(ran1(seed)*N0); // sample 1
-		int s2 = floor(ran1(seed)*N0); // sample 2
+		s1 = floor(ran1(seed)*N0); // sample 1
+		s2 = floor(ran1(seed)*N0); // sample 2
 		//printf("s1:%d k1:%d k2:%d k:%d\n",s1,popop[s1].k1,popop[s1].k2,popop[s1].k);
 		//printf("s2:%d k1:%d k2:%d k:%d\n",s2,popop[s2].k1,popop[s2].k2,popop[s2].k);
 		if (popop[s1].id == 1 || popop[s2].id == 1) { // either parents is segment 1
@@ -365,7 +366,7 @@ void mutate(long *seed, int back, int N0, double mu, int L, struct virus popop[]
 				breakpt = floor(ran1(seed)*(mut_num+1));
 				popop[i].k1 += breakpt;
 				popop[i].k2 += mut_num - breakpt;
-				popop[i].k = popop[i].k1 + popop[i].k2;
+				popop[i].k = mut_num;
 			}
 		}
 	}

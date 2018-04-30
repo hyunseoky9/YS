@@ -82,7 +82,6 @@ int main(int argc, char *argv[]) {
 	char *seed_s = argv[16];
 	char *end1;
 	
-
 	int back = (int) strtol(back_s,&end1,10);
 	int timestep = (int) strtol(timestep_s,&end1,10);
 	int krecord = (int) strtol(krecord_s, &end1,10);
