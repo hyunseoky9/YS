@@ -634,7 +634,7 @@ void mutate2(long *seed, double s, int back, int N0, double mu, int L, struct vi
 					}
 					else 
 					{
-						if (ran1(seed) < 0.5) 
+						if (ran1(seed) < (float)popop[i].k1/popop[i].k) 
 						{
 							popop[i].k1 -= 1;
 							popop[i].k -= 1;
