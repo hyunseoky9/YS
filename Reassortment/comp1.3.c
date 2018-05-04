@@ -92,7 +92,7 @@ int main(int argc, char *argv[]) {
 	double N1r = (double) strtof(N1r_s,NULL);
 	long seed = strtol(seed_s,&end1,10);
 
-	printf("back=%d, timestep=%d, krecord=%d, rep=%d, L=%d, s=%.2f, N0=%d, K=%d, mu=%.5f, gen_num=%d, cost=%.2f, r=%.2f, N1r=%.2f", back, timestep, krecord, rep, L, s, N0, K, mu, gen_num, cost, r, N1r);
+	printf("back=%d, timestep=%d, krecord=%d, rep=%d, L=%d, s=%.2f, N0=%d, K=%d, mu=%.5f, gen_num=%d, cost=%.2f, r=%.2f, N1r=%.2f\n", back, timestep, krecord, rep, L, s, N0, K, mu, gen_num, cost, r, N1r);
 
 
 
@@ -123,6 +123,7 @@ int main(int argc, char *argv[]) {
 	int N2 = N0*(1-N1r); // initial 2seg pop
 	struct virus next_gen[N0];
 	struct virus *pop2;
+
 	if (timestep && krecord != 1) 
 	{
 		fprintf(fPointer,"rep,t,pop1,pop2,k1,k2\n");
@@ -151,6 +152,7 @@ int main(int argc, char *argv[]) {
 	int i,repe,gen;
 	for (repe=0; repe<rep; repe++)
 	{	
+
 		// initialize pop
 		for (i=0;i<N1;i++)
 		{
@@ -166,7 +168,6 @@ int main(int argc, char *argv[]) {
 			pop[i+N1].k2 = 0;
 			pop[i+N1].k = 0;
 		}
-		
 		printf("REP=%d/%d\n",repe,rep);
 		for (gen=0; gen<gen_num; gen++)
 		{ 
