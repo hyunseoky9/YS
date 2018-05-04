@@ -14,17 +14,25 @@ struct virus{
 float ran1(long *idum);
 float gammln(float xx);
 float bnldev(float pp, int n, long *idum);
-
+int test(long *seed);
 int main(int argc, char *argv[])
 {
-
-	for (int i=0; i<20; i++) {
-		printf("\rwhat the hell%d",i);
+	char *header1 = (char*) malloc(650*sizeof(char));
+	sprintf(header1, "rep,t,pop1,pop2,");
+	int m;
+	for( m=0; m<51; m++) 
+	{
+		sprintf(header1,"%s,k1.%d",header1,m);			
 	}
+	for( m=0; m<51; m++)
+	{
+		sprintf(header1,"%s,k2.%d",header1,m);			
+	}
+	sprintf(header1,"%s\n",header1);
+	printf("%s",header1);
+	free(header1);
 	return 0;
-
 }	 	
-
 
 #define IA 16807
 #define IM 2147483647

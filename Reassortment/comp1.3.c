@@ -123,21 +123,44 @@ int main(int argc, char *argv[]) {
 	int N2 = N0*(1-N1r); // initial 2seg pop
 	struct virus next_gen[N0];
 	struct virus *pop2;
-	if (timestep) {
+	if (timestep && krecord != 1) 
+	{
 		fprintf(fPointer,"rep,t,pop1,pop2,k1,k2\n");
-	} else {
+	} 
+	else if (timestep && krecord == 1)
+	{
+		char *header1 = (char*) malloc(650*sizeof(char));
+		sprintf(header1, "rep,t,pop1,pop2,");
+		int m;
+		for( m=0; m<51; m++) 
+		{
+			sprintf(header1,"%s,k1.%d",header1,m);			
+		}
+		for( m=0; m<51; m++)
+		{
+			sprintf(header1,"%s,k2.%d",header1,m);			
+		}
+		sprintf(header1,"%s\n",header1);
+		printf("%s",header1);
+		free(header1);
+	}
+	else
+	{
 		fprintf(fPointer,"pop1,pop2,k1,k2\n");
 	}
 	int i,repe,gen;
-	for (repe=0; repe<rep; repe++){	
+	for (repe=0; repe<rep; repe++)
+	{	
 		// initialize pop
-		for (i=0;i<N1;i++){
+		for (i=0;i<N1;i++)
+		{
 			pop[i].id = 1;
 			pop[i].k1 = 0;
 			pop[i].k2 = 0;
 			pop[i].k = 0;
 		}
-		for (i=0;i<N2;i++){
+		for (i=0;i<N2;i++)
+		{
 			pop[i+N1].id = 2;
 			pop[i+N1].k1 = 0;
 			pop[i+N1].k2 = 0;
@@ -145,7 +168,9 @@ int main(int argc, char *argv[]) {
 		}
 		
 		printf("REP=%d/%d\n",repe,rep);
-		for (gen=0; gen<gen_num; gen++){ // run through generation
+		for (gen=0; gen<gen_num; gen++)
+		{ 
+			// run through generation
 			//printf("GEN=%d/%d\n",gen,gen_num);
 			mutate(&seed,back,N0,mu,L,pop);
 			pop2 = step(&seed,(repe+1),(gen+1),N0,L,timestep,krecord,s,K,mu,r,pop,next_gen,&fPointer);
@@ -175,47 +200,67 @@ struct virus *step(long *seed, int rep, int t, int N0, int L, int timestep, int 
 	int ks2[N0];
 	int ks2l = 0;
 	int s1, s2;
-	while (l < N0) {
+	while (l < N0) 
+	{
 		s1 = floor(ran1(seed)*N0); // sample 1
 		s2 = floor(ran1(seed)*N0); // sample 2
 		//printf("s1:%d k1:%d k2:%d k:%d\n",s1,popop[s1].k1,popop[s1].k2,popop[s1].k);
 		//printf("s2:%d k1:%d k2:%d k:%d\n",s2,popop[s2].k1,popop[s2].k2,popop[s2].k);
-		if (popop[s1].id == 1 || popop[s2].id == 1) { // either parents is segment 1
-			if (ran1(seed) < 0.5) { // pick s1
+		if (popop[s1].id == 1 || popop[s2].id == 1) 
+		{ 
+			// either parents is segment 1
+			if (ran1(seed) < 0.5) 
+			{	
+				// pick s1
 				if (ran1(seed) < pow(1.0-s,popop[s1].k)){
 					next_gen_p[l].id = popop[s1].id;
 					next_gen_p[l].k1 = popop[s1].k1;
 					next_gen_p[l].k2 = popop[s1].k2;
 					next_gen_p[l].k = popop[s1].k;
-					if (next_gen_p[l].id == 1) {
+					if (next_gen_p[l].id == 1) 
+					{
 						ks1[ks1l] = next_gen_p[l].k;
 						ks1l += 1;
-					} else {
+					} 
+					else 
+					{
 						ks2[ks2l] = next_gen_p[l].k;
 						ks2l += 1;
 					}
 					l += 1;
 				}
-			} else { // pick s2
-				if (ran1(seed) < pow(1.0-s,popop[s2].k)){
+			} 
+			else 
+			{ 
+				// pick s2
+				if (ran1(seed) < pow(1.0-s,popop[s2].k))
+				{
 					next_gen_p[l].id = popop[s2].id;
 					next_gen_p[l].k1 = popop[s2].k1;
 					next_gen_p[l].k2 = popop[s2].k2;
 					next_gen_p[l].k = popop[s2].k;
-					if (next_gen_p[l].id == 1) {
+					if (next_gen_p[l].id == 1) 
+					{
 						ks1[ks1l] = next_gen_p[l].k;
 						ks1l += 1;
-					} else {
+					} 
+					else 
+					{
 						ks2[ks2l] = next_gen_p[l].k;
 						ks2l += 1;
 					}					
 					l += 1;
 				}
 			}
-		} else { // both parents segment 2
-			if (ran1(seed)<r) { // recombination happens
-				if (ran1(seed) < 0.5) { // pick k1 from s1 and k2 from s2
-					if (ran1(seed) < pow(1.0-s,(popop[s1].k1 + popop[s2].k2))){
+		} 
+		else 
+		{ // both parents segment 2
+			if (ran1(seed)<r) 
+			{ // recombination happens
+				if (ran1(seed) < 0.5) 
+				{ // pick k1 from s1 and k2 from s2
+					if (ran1(seed) < pow(1.0-s,(popop[s1].k1 + popop[s2].k2)))
+					{
 						next_gen_p[l].id = popop[s1].id;
 						next_gen_p[l].k1 = popop[s1].k1;
 						next_gen_p[l].k2 = popop[s2].k2;
@@ -224,8 +269,11 @@ struct virus *step(long *seed, int rep, int t, int N0, int L, int timestep, int 
 						ks2l += 1;
 						l += 1;
 					}
-				} else { // pick k1 from s2 and k2 from s1
-					if (ran1(seed) < pow(1.0-s,(popop[s1].k2 + popop[s2].k1))){
+				}
+				else 
+				{ // pick k1 from s2 and k2 from s1
+					if (ran1(seed) < pow(1.0-s,(popop[s1].k2 + popop[s2].k1)))
+					{
 						next_gen_p[l].id = popop[s2].id;
 						next_gen_p[l].k1 = popop[s2].k1;
 						next_gen_p[l].k2 = popop[s1].k2;
@@ -235,9 +283,13 @@ struct virus *step(long *seed, int rep, int t, int N0, int L, int timestep, int 
 						l += 1;
 					}
 				}
-			} else { // recombintion doesn't happen
-				if (ran1(seed) < 0.5) { // pick s1
-					if (ran1(seed) < pow(1.0-s,popop[s1].k)){
+			}
+			else 
+			{ // recombintion doesn't happen
+				if (ran1(seed) < 0.5) 
+				{ // pick s1
+					if (ran1(seed) < pow(1.0-s,popop[s1].k))
+					{
 						next_gen_p[l].id = popop[s1].id;
 						next_gen_p[l].k1 = popop[s1].k1;
 						next_gen_p[l].k2 = popop[s1].k2;
@@ -246,8 +298,11 @@ struct virus *step(long *seed, int rep, int t, int N0, int L, int timestep, int 
 						ks2l += 1;
 						l += 1;
 					}
-				} else { // pick s2
-					if (ran1(seed) < pow(1.0-s,popop[s2].k)){
+				}
+				else 
+				{ // pick s2
+					if (ran1(seed) < pow(1.0-s,popop[s2].k))
+					{
 						next_gen_p[l].id = popop[s2].id;
 						next_gen_p[l].k1 = popop[s2].k1;
 						next_gen_p[l].k2 = popop[s2].k2;
@@ -261,49 +316,52 @@ struct virus *step(long *seed, int rep, int t, int N0, int L, int timestep, int 
 		}	
 	}
 
-	if (krecord == 0){
+	if (krecord == 0)
+	{
 		float mk1;
 		float mk2;
-		if (ks1l == 0) {
+		if (ks1l == 0) 
+		{
 			mk1 = -1;
-		} else {
+		} 
+		else 
+		{
 			mk1 = (float)intsum(ks1l,ks1)/ks1l;				
 		}
-		if (ks2l == 0) {
+		if (ks2l == 0)
+		{
 			mk2 = -1;
-		} else {
+		} 
+		else 
+		{
 			mk2 = (float)intsum(ks2l,ks2)/ks2l;
 		}
 		fprintf(*fPointer,"%d,%d,%d,%d,%.2f,%.2f\n",rep,t,ks1l,ks2l,mk1,mk2);			
-	} else if (krecord == 1) {
-		/*if (ks1l == 0){
-			char *k1str = "'NA'"
-		} else {
-			char *k1str	= (char *) malloc(N0*4*sizeof(char));
-		}
-		if (ks2l == 0){
-			char *k2str = "'NA'"
-		} else {
-			char *k2str = (char *) malloc(N0*4*sizeof(char));
-			ks2strl = 0;
-			for (int i=0; i<ks2l; i++) {
-				char *int2str = (char *) malloc(4);
-				sprintf(int2str,"%d",ks2[i]);
-				k2str[i] 
-			}
-		}
-		fprintf(fPointer,"",);*/
-	} else {
+	} 
+	else if (krecord == 1) 
+	{
+		int k1list[51];
+		int k2list[51];
+		
+	} 
+	else 
+	{
 		int kmin1;
 		int kmin2;
-		if (ks1l == 0) {
+		if (ks1l == 0) 
+		{
 			kmin1 = -1;
-		} else {
+		} 
+		else 
+		{
 			kmin1 = intmin(ks1l,ks1);
 		} 
-		if (ks2l == 0) {
+		if (ks2l == 0) 
+		{
 			kmin2 = -1;
-		} else {
+		} 
+		else 
+		{
 			kmin2 = intmin(ks2l,ks2);
 		}
 		fprintf(*fPointer,"%d,%d,%d,%d,%d,%d\n",rep,t,ks1l,ks2l,kmin1,kmin2);
@@ -319,50 +377,79 @@ void mutate(long *seed, int back, int N0, double mu, int L, struct virus popop[]
 	// output: population struct with updated k values according to
 	//   mutation rate.
 	int i,j,mut_num,breakpt;
-	for (i=0;i<N0; i++){
+	for (i=0;i<N0; i++)
+	{
 		mut_num = bnldev(mu,L,seed); // binomial pick of number of mutation based on mu.
-		if (back == 1){ // back mutation
-			if (popop[i].id == 1) { // individual is 1segment
-				for (j=0; j<mut_num; j++) { // add or subtract k
-					if (ran1(seed)*L < popop[i].k) { // k/L is the probability of back mutating.
+		if (back == 1)
+		{ // back mutation
+			if (popop[i].id == 1) 
+			{ // individual is 1segment
+				for (j=0; j<mut_num; j++) 
+				{ // add or subtract k
+					if (ran1(seed)*L < popop[i].k) 
+					{ // k/L is the probability of back mutating.
 						popop[i].k -= 1;
-					} else {
+					}
+					else
+					{
 						popop[i].k += 1;
 					}
 				}
-			} else { // individual is 2segment
-				for (j=0; j<mut_num; j++) { // add or subtract k1 or k2, and k.
-					if (ran1(seed)*L < popop[i].k) {
-						if (popop[i].k1==0) {
+			} 
+			else
+			{ // individual is 2segment
+				for (j=0; j<mut_num; j++) 
+				{ // add or subtract k1 or k2, and k.
+					if (ran1(seed)*L < popop[i].k) 
+					{
+						if (popop[i].k1==0) 
+						{
 							popop[i].k2 -= 1;
 							popop[i].k -= 1;
-						} else if (popop[i].k2 == 0) {
+						} 
+						else if (popop[i].k2 == 0) 
+						{
 							popop[i].k1 -= 1;
 							popop[i].k -= 1;
-						} else {
-							if (ran1(seed) < (float)popop[i].k1/popop[i].k) {
+						} 
+						else 
+						{
+							if (ran1(seed) < (float)popop[i].k1/popop[i].k) 
+							{
 								popop[i].k1 -= 1;
 								popop[i].k -= 1;
-							} else {
+							} 
+							else 
+							{
 								popop[i].k2 -= 1;
 								popop[i].k -= 1;
 							}
 						}
-					} else {
-						if (ran1(seed) < 0.5) {
+					}
+					else 
+					{
+						if (ran1(seed) < 0.5) 
+						{
 							popop[i].k1 += 1;
 							popop[i].k += 1;
-						} else {
+						}
+						else
+						{
 							popop[i].k2 += 1;
 							popop[i].k += 1;
 						}
 					}
 				}
 			}
-		} else { // no back mutation 
-			if (popop[i].id == 1) {
+		}
+		else 
+		{ // no back mutation 
+			if (popop[i].id == 1) 
+			{
 				popop[i].k += mut_num;
-			} else {
+			}
+			else 
+			{
 				breakpt = floor(ran1(seed)*(mut_num+1));
 				popop[i].k1 += breakpt;
 				popop[i].k2 += mut_num - breakpt;
@@ -494,8 +581,10 @@ float bnldev(float pp, int n,long *idum)
 int intmin(int argc, int array[]){
   int min_num = array[0];
   int i;
-  for(i=1;i<argc;i++){
-    if(array[i]<min_num){
+  for(i=1;i<argc;i++)
+  {
+    if(array[i]<min_num)
+    {
       min_num = array[i];
     }
   }
@@ -505,7 +594,8 @@ int intmin(int argc, int array[]){
 int intsum(int size,int a[]){
   int i;
   int sum = 0;
-  for(i=0; i<size; i++){
+  for(i=0; i<size; i++)
+  {
     sum += a[i];
   }
   return sum;

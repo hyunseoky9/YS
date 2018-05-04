@@ -130,7 +130,7 @@ class Virus2():
                         self.k1 -= 1
                         self.k -= 1
                     else: 
-                        if p < 0.5: # seg1
+                        if p < self.k1/self.k: # seg1
                             self.k1 -= 1
                             self.k -= 1
                         else: # seg2
