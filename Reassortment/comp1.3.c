@@ -342,16 +342,43 @@ struct virus *step(long *seed, int rep, int t, int N0, int L, int timestep, int 
 	{
 		int k1list[51];
 		int k2list[51];
-		
-	} 
-	else 
+		int i;
+		for (i=0; i<ks1l; i++) 
+		{
+			if (ks1[i] > 50) 
+			{
+				printf("WARNINGWARNING THERE'S INDIVIDUAL WITH K HIGHER THAN 50!!!!\n");
+			}
+			k1list[ks1[i]] += 1; 
+		}
+		for (i=0; i<ks2l; i++)
+		{
+			if (ks1[i] > 50) 
+			{
+				printf("WARNINGWARNING THERE'S INDIVIDUAL WITH K HIGHER THAN 50!!!!\n");
+			}
+			k2list[ks2[i]] += 1;
+		}
+		char *line = (char*) malloc(10100*sizeof(char));
+		sprintf(line,"%d,%d,%d,%d\n",rep,t,ks1l,ks2l);
+		for (i=0; i<51; i++)
+		{
+			sprintf(line,"%s,%d",line,k1list[i]);
+		}
+		for (i=0; i<51; i++)
+		{
+			sprintf(line,"%s,%d",line,k2list[i]);
+		}
+		fprintf(*fPointer,"%s\n",line);
+	}
+	else
 	{
 		int kmin1;
 		int kmin2;
 		if (ks1l == 0) 
 		{
 			kmin1 = -1;
-		} 
+		}
 		else 
 		{
 			kmin1 = intmin(ks1l,ks1);
