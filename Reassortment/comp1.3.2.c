@@ -289,7 +289,7 @@ struct virus *step(long *seed, int rep, int t, int N0, int L, int timestep, int 
 					l += 1;
 				}
 				// pick s2
-				if (ran1(seed) < pow(1.0-s,popop[s2].k))
+				if (ran1(seed) < pow(1.0-s,popop[s2].k) && l < N0)
 				{
 					next_gen_p[l].id = popop[s2].id;
 					next_gen_p[l].k1 = popop[s2].k1;
