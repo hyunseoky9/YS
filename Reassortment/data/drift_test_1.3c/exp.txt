@@ -1,0 +1,1 @@
+THis set of data varies population size in WF model to see if higher population reduces drift and thus makes the 2 segment and 1 segment model to have same mean k over time.
