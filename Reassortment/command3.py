@@ -49,7 +49,7 @@ for i in range(len(N0)):
 																	rep,L,s,N0[i],K[i],mu,gen_num,cost,r,N1r[j])
 	elif version == '1.3':
 		params = '%s %d %d %d %d %d %f %d %d %.5f %d %f %f %f'%(destination,back,timestep,krecord,
-																rep,L,s,N0[i],K[j],mu,gen_num,cost,r,N1r[j])
+																rep,L,s,N0[i],K[i],mu,gen_num,cost,r,N1r[j])
 	if file2run[-1] == "y": # file is .py
 		cd('python %s %s'%(file2run, params))
 	else: # file is .c
