@@ -467,7 +467,7 @@ void mutate(long *seed, int back, int N0, double mu, int L, struct virus popop[]
 				breakpt = floor(ran1(seed)*(mut_num+1));
 				popop[i].k1 += breakpt;
 				popop[i].k2 += mut_num - breakpt;
-				popop[i].k = mut_num;
+				popop[i].k += mut_num;
 			}
 		}
 	}

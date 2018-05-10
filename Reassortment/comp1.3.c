@@ -170,7 +170,7 @@ int main(int argc, char *argv[]) {
 		}
 		printf("REP=%d/%d\n",repe,rep);
 		for (gen=0; gen<gen_num; gen++)
-		{ 
+		{
 			// run through generation
 			//printf("GEN=%d/%d\n",gen,gen_num);
 			mutate(&seed,back,N0,mu,L,pop);
@@ -213,7 +213,8 @@ struct virus *step(long *seed, int rep, int t, int N0, int L, int timestep, int 
 			if (ran1(seed) < 0.5) 
 			{	
 				// pick s1
-				if (ran1(seed) < pow(1.0-s,popop[s1].k)){
+				if (ran1(seed) < pow(1.0-s,popop[s1].k)) 
+				{
 					next_gen_p[l].id = popop[s1].id;
 					next_gen_p[l].k1 = popop[s1].k1;
 					next_gen_p[l].k2 = popop[s1].k2;
@@ -253,14 +254,14 @@ struct virus *step(long *seed, int rep, int t, int N0, int L, int timestep, int 
 					l += 1;
 				}
 			}
-		} 
-		else 
+		}
+		else
 		{ // both parents segment 2
 			if (ran1(seed)<r) 
 			{ // recombination happens
 				if (ran1(seed) < 0.5) 
 				{ // pick k1 from s1 and k2 from s2
-					if (ran1(seed) < pow(1.0-s,(popop[s1].k1 + popop[s2].k2)))
+					if (ran1(seed) < pow(1.0-s,(popop[s1].k1 + popop[s2].k2))*(1.0-cost))
 					{
 						next_gen_p[l].id = popop[s1].id;
 						next_gen_p[l].k1 = popop[s1].k1;
@@ -271,9 +272,9 @@ struct virus *step(long *seed, int rep, int t, int N0, int L, int timestep, int 
 						l += 1;
 					}
 				}
-				else 
+				else
 				{ // pick k1 from s2 and k2 from s1
-					if (ran1(seed) < pow(1.0-s,(popop[s1].k2 + popop[s2].k1)))
+					if (ran1(seed) < pow(1.0-s,(popop[s1].k2 + popop[s2].k1))*(1.0-cost))
 					{
 						next_gen_p[l].id = popop[s2].id;
 						next_gen_p[l].k1 = popop[s2].k1;
@@ -289,7 +290,7 @@ struct virus *step(long *seed, int rep, int t, int N0, int L, int timestep, int 
 			{ // recombintion doesn't happen
 				if (ran1(seed) < 0.5) 
 				{ // pick s1
-					if (ran1(seed) < pow(1.0-s,popop[s1].k))
+					if (ran1(seed) < pow(1.0-s,popop[s1].k)*(1.0-cost))
 					{
 						next_gen_p[l].id = popop[s1].id;
 						next_gen_p[l].k1 = popop[s1].k1;
@@ -302,7 +303,7 @@ struct virus *step(long *seed, int rep, int t, int N0, int L, int timestep, int 
 				}
 				else 
 				{ // pick s2
-					if (ran1(seed) < pow(1.0-s,popop[s2].k))
+					if (ran1(seed) < pow(1.0-s,popop[s2].k)*(1.0-cost))
 					{
 						next_gen_p[l].id = popop[s2].id;
 						next_gen_p[l].k1 = popop[s2].k1;
@@ -371,6 +372,7 @@ struct virus *step(long *seed, int rep, int t, int N0, int L, int timestep, int 
 			sprintf(line,"%s,%d",line,k2list[i]);
 		}
 		fprintf(*fPointer,"%s\n",line);
+		free(line);
 	}
 	else
 	{
@@ -481,9 +483,10 @@ void mutate(long *seed, int back, int N0, double mu, int L, struct virus popop[]
 				breakpt = floor(ran1(seed)*(mut_num+1));
 				popop[i].k1 += breakpt;
 				popop[i].k2 += mut_num - breakpt;
-				popop[i].k = mut_num;
+				popop[i].k += mut_num;
 			}
 		}
+		//printf("%d,",popop[i].k);
 	}
 }
 

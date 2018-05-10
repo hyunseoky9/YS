@@ -8,7 +8,7 @@ back = 0
 timestep = 1
 krecord = 0 #  2= smallest k of the subpop. 1= all indiv's k. 0=mean k.
 untilext = 0
-rep = 100
+rep = 50
 L = 300
 s = 0.05
 N0 = [1000,10000,100000,200000]
@@ -16,9 +16,9 @@ K = [1000,10000,100000,200000]
 mu = 0.0008
 gen_num = 500
 cost = 0
-r = 0
+r = 0.5
 N1r = [0,1]
-destination = 'drift_test_1.3.2c' #'back_test2_1.3c'
+destination = 'drift_test_1.3c'
 file2run = sys.argv[1]
 version = file2run[4:7]
 
