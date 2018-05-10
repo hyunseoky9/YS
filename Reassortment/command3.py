@@ -44,19 +44,19 @@ K = [1000,10000,100000,200000]
 destination = 'N0ratio_test'
 for i in range(len(N0)):
 	for j in range(len(N1r)):
-	if version == '1.2':
-		params = '%s %d %d %d %d %d %d %f %d %d %.5f %d %f %f %f'%(destination,back,timestep,krecord,untilext,
+		if version == '1.2':
+			params = '%s %d %d %d %d %d %d %f %d %d %.5f %d %f %f %f'%(destination,back,timestep,krecord,untilext,
+																		rep,L,s,N0[i],K[i],mu,gen_num,cost,r,N1r[j])
+		elif version == '1.3':
+			params = '%s %d %d %d %d %d %f %d %d %.5f %d %f %f %f'%(destination,back,timestep,krecord,
 																	rep,L,s,N0[i],K[i],mu,gen_num,cost,r,N1r[j])
-	elif version == '1.3':
-		params = '%s %d %d %d %d %d %f %d %d %.5f %d %f %f %f'%(destination,back,timestep,krecord,
-																rep,L,s,N0[i],K[i],mu,gen_num,cost,r,N1r[j])
-	if file2run[-1] == "y": # file is .py
-		cd('python %s %s'%(file2run, params))
-	else: # file is .c
-		cd('gcc -Wall %s -o cfile -lm'%(file2run))
-		cd('./cfile %s %d'%(params, seed))
-	count += 1
-	print("%d/%d DONE\n"%(count, len(N0)*len(N1r)))
+		if file2run[-1] == "y": # file is .py
+			cd('python %s %s'%(file2run, params))
+		else: # file is .c
+			cd('gcc -Wall %s -o cfile -lm'%(file2run))
+			cd('./cfile %s %d'%(params, seed))
+		count += 1
+		print("%d/%d DONE\n"%(count, len(N0)*len(N1r)))
 
 N1r = 0.5
 N0 = 1000
