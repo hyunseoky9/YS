@@ -22,7 +22,7 @@ destination = 'cost_test'
 file2run = sys.argv[1]
 version = file2run[4:7]
 count = 0
-"""
+
 for i in range(len(cost)):
 	if version == '1.2':
 		params = '%s %d %d %d %d %d %d %f %d %d %.5f %d %f %f %f'%(destination,back,timestep,krecord,untilext,
@@ -37,13 +37,13 @@ for i in range(len(cost)):
 		cd('./cfile %s %d'%(params, seed))
 	count += 1
 	print("%d/%d DONE\n"%(count, len(cost)))
-"""
+
 cost = 0.0
 N1r = [0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9]
 N0 = [1000,10000,100000,200000]
 K = [1000,10000,100000,200000]
 destination = 'N0ratio_test'
-"""
+
 for i in range(len(N0)):
 	for j in range(len(N1r)):
 		if version == '1.2':
@@ -59,13 +59,13 @@ for i in range(len(N0)):
 			cd('./cfile %s %d'%(params, seed))
 		count += 1
 		print("%d/%d DONE\n"%(count, len(N0)*len(N1r)))
-"""
+
 N1r = 0.5
 N0 = 1000
 K = 1000
 r = [0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1]
 destination = 'r_test'
-"""
+
 for i in range(len(r)):
 	if version == '1.2':
 		params = '%s %d %d %d %d %d %d %f %d %d %.5f %d %f %f %f'%(destination,back,timestep,krecord,untilext,
@@ -80,7 +80,7 @@ for i in range(len(r)):
 		cd('./cfile %s %d'%(params, seed))
 	count += 1
 	print("%d/%d DONE\n"%(count, len(r)))
-"""
+
 r = 0.5
 s = [0,0.05,0.1,0.15,0.2,0.25,0.3,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95]
 destination = 's_test'
@@ -116,7 +116,7 @@ for i in range(len(cost)):
 	else: # file is .c
 		cd('gcc -Wall %s -o cfile -lm'%(file2run))
 		cd('./cfile %s %d'%(params, seed))
-	count += 1
+		count += 1
 	print("%d/%d DONE\n"%(count, len(cost)*len(N1r)))
 
 

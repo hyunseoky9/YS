@@ -49,7 +49,7 @@ float ran1(long *seed);
 float gammln(float xx);
 float bnldev(float pp, int n, long *idum);
 void mutate(long *seed, int back, int N0, double mu, int L, struct virus popop[]);
-struct virus *step(long *seed, int rep, int t, int N0, int L, int timestep, int krecord, double s, int K, double mu, double r,struct virus popop[],struct virus *next_gen_p,FILE **fPointer);
+struct virus *step(long *seed, int rep, int t, double cost, int N0, int L, int timestep, int krecord, double s, int K, double mu, double r,struct virus popop[],struct virus *next_gen_p,FILE **fPointer);
 int intmin(int argc,int array[]); //min value of an integer array
 int intsum(int size,int a[]);
 
@@ -174,7 +174,7 @@ int main(int argc, char *argv[]) {
 			// run through generation
 			//printf("GEN=%d/%d\n",gen,gen_num);
 			mutate(&seed,back,N0,mu,L,pop);
-			pop2 = step(&seed,(repe+1),(gen+1),N0,L,timestep,krecord,s,K,mu,r,pop,next_gen,&fPointer);
+			pop2 = step(&seed,(repe+1),(gen+1),cost,N0,L,timestep,krecord,s,K,mu,r,pop,next_gen,&fPointer);
 			memcpy(pop,pop2,sizeof(struct virus)*N0); // cycle between pop and pop2 to continue looping.
 		}
 	}
@@ -189,7 +189,7 @@ int main(int argc, char *argv[]) {
 }
 
 
-struct virus *step(long *seed, int rep, int t, int N0, int L, int timestep, int krecord, double s, int K, double mu, double r,struct virus popop[],struct virus *next_gen_p,FILE **fPointer) {
+struct virus *step(long *seed,int rep, int t, double cost, int N0, int L, int timestep, int krecord, double s, int K, double mu, double r,struct virus popop[],struct virus *next_gen_p,FILE **fPointer) {
 //struct virus *step(int rep, int t,struct virus popop[],struct virus *next_gen_p,FILE **fPointer) {
 	// goes through reproduction process
 	// the process is depicted at the top of the script.
