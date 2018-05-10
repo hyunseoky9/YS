@@ -1,4 +1,4 @@
-# was used for making ratio_test, cost_test, and N0ratio_test data.
+# was used for making ratio_test, cost_test, and N0ratio_test, r_test data.
 
 from os import system as cd
 import sys
@@ -56,7 +56,25 @@ for i in range(len(N0)):
 		cd('gcc -Wall %s -o cfile -lm'%(file2run))
 		cd('./cfile %s %d'%(params, seed))
 	count += 1
-	print("%d/%d DONE\n"%(count, len(cost)))
+	print("%d/%d DONE\n"%(count, len(N0)*len(N1r)))
 
-
+N1r = 0.5
+N0 = 1000
+K = 1000
+r = [0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1]
+destination = 'r_test'
+for i in range(len(r)):
+	if version == '1.2':
+		params = '%s %d %d %d %d %d %d %f %d %d %.5f %d %f %f %f'%(destination,back,timestep,krecord,untilext,
+																	rep,L,s,N0,K,mu,gen_num,cost,r[i],N1r)
+	elif version == '1.3':
+		params = '%s %d %d %d %d %d %f %d %d %.5f %d %f %f %f'%(destination,back,timestep,krecord,
+																rep,L,s,N0,K,mu,gen_num,cost,r[i],N1r)
+	if file2run[-1] == "y": # file is .py
+		cd('python %s %s'%(file2run, params))
+	else: # file is .c
+		cd('gcc -Wall %s -o cfile -lm'%(file2run))
+		cd('./cfile %s %d'%(params, seed))
+	count += 1
+	print("%d/%d DONE\n"%(count, len(r)))
 
