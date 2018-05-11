@@ -1,0 +1,1 @@
+varies popsize (N0) and starting ratio (N1r) while everything else held constant.
