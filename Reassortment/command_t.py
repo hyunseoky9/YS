@@ -17,7 +17,9 @@ mu = 0.0006
 gen_num = 500
 cost = 0
 r = 0.5
-N1r = 1
+r2 = 6/8
+N1r = 0.2
+N2r = 0.2
 destination = 'ctest'
 file2run = sys.argv[1]
 version = file2run[4:7]
@@ -30,6 +32,9 @@ if version == '1.2':
 elif version == '1.3':
 	params = '%s %d %d %d %d %d %f %d %d %.5f %d %f %f %f'%(destination,back,timestep,krecord,
 															rep,L,s,N0,K,mu,gen_num,cost,r,N1r)
+elif version == '2.3':
+	params = '%s %d %d %d %d %d %f %d %d %.5f %d %f %f %f %f %f'%(destination,back,timestep,krecord,
+															rep,L,s,N0,K,mu,gen_num,cost,r,r2,N1r,N2r)
 if file2run[-1] == "y": # file is .py
 	cd('python %s %s'%(file2run, params))
 else: # file is .c
