@@ -17,11 +17,11 @@ mu = [0.0013,0.0014,0.0015,0.0016,0.0017,0.0018,0.0019,0.0020,0.0021,0.0022] #[0
 gen_num = 500
 cost = 0
 r = 0.5
-N1r = [0]
+N1r = [1]
 destination = 'back_test2_1.3c'
 file2run = sys.argv[1]
 version = file2run[4:7]
-
+	
 count = 0
 for j in range(len(back)):
 	for k in range(len(N1r)):

@@ -22,8 +22,10 @@
  mu = mutation rate per site
  gen_num = generation amount 
  r = reassortment rate
+ r2 = reassortment rate of 3 segments
  rep = repetition amount
  N1r = ratio of 1segment virus
+ N2r = ratio of 2segment virus
 */
 // virus basic structure
 struct virus {
