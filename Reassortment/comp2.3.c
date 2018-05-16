@@ -116,6 +116,7 @@ int main(int argc, char *argv[]) {
 	int N1 = N0*N1r; // initial 1seg pop
 	int N2 = N0*N2r; // initial 2seg pop
 	int N3 = N0*(1-(N1r + N2r));
+	printf("N1=%d, N2=%d, N3=%d\n",N1,N2,N3);
 	struct virus next_gen[N0];
 	struct virus *pop2;
 
@@ -171,7 +172,7 @@ int main(int argc, char *argv[]) {
 		}
 		for (i=0;i<N3;i++)
 		{
-			pop[i+N1+N2].id = 2;
+			pop[i+N1+N2].id = 3;
 			pop[i+N1+N2].k1 = 0;
 			pop[i+N1+N2].k2 = 0;
 			pop[i+N1+N2].k3 = 0;
