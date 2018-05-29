@@ -168,7 +168,10 @@ int main(int argc, char *argv[]) {
 			pop[i+N1].k2 = 0;
 			pop[i+N1].k = 0;
 		}
-		printf("REP=%d/%d\n",repe,rep);
+		if (repe % 100 == 0)
+		{
+			printf("REP=%d/%d\n",repe,rep);
+		}
 		for (gen=0; gen<gen_num; gen++)
 		{
 			// run through generation
