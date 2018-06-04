@@ -1,0 +1,1 @@
+data varying cost and N1r in comp1.3

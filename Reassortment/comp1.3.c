@@ -179,7 +179,7 @@ int main(int argc, char *argv[]) {
 		{
 			// run through generation
 			//printf("GEN=%d/%d\n",gen,gen_num);
-			if (N1 == 0 || N2 == 0)
+			if (untilext == 1 && (N1 == 0 || N2 == 0))
 			{
 				break;
 			}
@@ -357,7 +357,7 @@ struct virus *step(long *seed,int rep, int t, double cost, int N0, int L, int ti
 		else if (gen == (gen_num -1) || ks1l == 0 || ks2l == 0)
 		{
 
-			fprintf(*fPointer,"%d,%d,%.2f,%.2f",ks1l,ks2l,mk1,mk2);
+			fprintf(*fPointer,"%d,%d,%.2f,%.2f\n",ks1l,ks2l,mk1,mk2);
 		}
 	} 
 	else if (krecord == 1) 
@@ -421,7 +421,7 @@ struct virus *step(long *seed,int rep, int t, double cost, int N0, int L, int ti
 		else if (gen == (gen_num -1) || ks1l == 0 || ks2l == 0)
 		{
 
-			fprintf(*fPointer,"%d,%d,%.2f,%.2f",ks1l,ks2l,mk1,mk2);
+			fprintf(*fPointer,"%d,%d,%d,%d\n",ks1l,ks2l,kmin1,kmin2);
 		}		
 	}	
 	return next_gen_p;

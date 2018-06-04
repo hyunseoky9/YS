@@ -8,7 +8,7 @@ back = 0
 timestep = 0
 krecord = 0 #  2= smallest k of the subpop. 1= all indiv's k. 0=mean k.
 untilext = 1
-rep = 100
+rep = 10000
 L = 300
 s = [0,0.05,0.1,0.15,0.2,0.25]
 N0 = 1000
@@ -27,20 +27,21 @@ count = 0
 
 for i in range(len(s)):
 	for j in range(len(N1r)):
-		for k in range(len(cost))
-	if version == '1.2':
-		params = '%s %d %d %d %d %d %d %f %d %d %.5f %d %f %f %f'%(destination,back,timestep,krecord,untilext,
-																	rep,L,s[i],N0,K,mu,gen_num,cost[k],r,N1r[j])
-	elif version == '1.3':
-		params = '%s %d %d %d %d %d %f %d %d %.5f %d %f %f %f %d'%(destination,back,timestep,krecord,
-																rep,L,s[i],N0,K,mu,gen_num,cost[k],r,N1r[j],untilext)
-	elif version == '2.3':
-		params = '%s %d %d %d %d %d %f %d %d %.5f %d %f %f %f %f %f %d'%(destination,back,timestep,krecord,
-																rep,L,s[i],N0,K,mu,gen_num,cost[k],r,r2,N1r[j],N2r,untilext)
-	if file2run[-1] == "y": # file is .py
-		cd('python %s %s'%(file2run, params))
-	else: # file is .c
-		cd('gcc -Wall %s -o cfile -lm'%(file2run))
-		cd('./cfile %s %d'%(params, seed))
-	count += 1
-	print("%d/%d DONE\n"%(count, len(mu)))
+		for k in range(len(cost)):
+			if version == '1.2':
+				params = '%s %d %d %d %d %d %d %f %d %d %.5f %d %f %f %f'%(destination,back,timestep,krecord,untilext,
+																			rep,L,s[i],N0,K,mu,gen_num,cost[k],r,N1r[j])
+			elif version == '1.3':
+				params = '%s %d %d %d %d %d %f %d %d %.5f %d %f %f %f %d'%(destination,back,timestep,krecord,
+																		rep,L,s[i],N0,K,mu,gen_num,cost[k],r,N1r[j],untilext)
+			elif version == '2.3':
+				params = '%s %d %d %d %d %d %f %d %d %.5f %d %f %f %f %f %f %d'%(destination,back,timestep,krecord,
+																		rep,L,s[i],N0,K,mu,gen_num,cost[k],r,r2,N1r[j],N2r,untilext)
+			if file2run[-1] == "y": # file is .py
+				cd('python %s %s'%(file2run, params))
+			else: # file is .c
+				cd('gcc -Wall %s -o cfile -lm'%(file2run))
+				cd('./cfile %s %d'%(params, seed))
+			count += 1
+			print("%d/%d DONE\n"%(count, len(cost)*len(N1r)*len(s)))
+			

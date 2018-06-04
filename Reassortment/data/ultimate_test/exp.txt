@@ -1,0 +1,1 @@
+varying N1r, s, and cost with comp1.3. No timestep record; only the last generation step is recorded or when one of the segments hits 0.
