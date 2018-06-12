@@ -19,7 +19,7 @@ cost = [0.02,0.04,0.06,0.08,0.1,0.12,0.14,0.16]
 r = 0.5 
 r2 = 0.75
 N1r = [0.6,0.7,0.8,0.9]
-destination = 'test'
+destination = 'ultimate_test'
 file2run = sys.argv[1]
 version = file2run[4:7]
 
