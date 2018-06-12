@@ -5,9 +5,9 @@ import sys
 import numpy as np
 seed = -1#np.random.randint(-9223372036854775808,-1)
 back = 0
-timestep = 1
+timestep = 0
 krecord = 0 #  2= smallest k of the subpop. 1= all indiv's k. 0=mean k.
-untilext = 0
+untilext = 1
 rep = 100
 L = 300
 s = [0,0.05,0.1,0.15,0.2,0.25]
