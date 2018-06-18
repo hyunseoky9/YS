@@ -1,5 +1,4 @@
 # was used for making back_test2 data.
-
 from os import system as cd
 import sys
 import numpy as np
@@ -21,7 +20,7 @@ N1r = [0,1] #[0.6,0.7,0.8,0.9]
 destination = 'test'
 file2run = sys.argv[1]
 version = file2run[4:7]
-	
+
 count = 0
 #for j in range(len(cost)):
 #	for k in range(len(N1r)):
