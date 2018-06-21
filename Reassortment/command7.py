@@ -5,7 +5,7 @@ import sys
 import numpy as np
 import time
 start = time.time()
-seed = -1#np.random.randint(-9223372036854775808,-1)
+seed = np.random.randint(-9223372036854775808,-1)
 back = 0
 timestep = 0
 krecord = 0 #  2= smallest k of the subpop. 1= all indiv's k. 0=mean k.
