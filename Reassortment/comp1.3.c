@@ -49,9 +49,10 @@ float ran1(long *seed);
 float gammln(float xx);
 float bnldev(float pp, int n, long *idum);
 void mutate(long *seed, int back, int N0, double mu, int L, struct virus popop[],int gen);
-struct virus *step(long *seed, int rep, int t, double cost, int N0, int L, int timestep, int krecord, double s, int K, double mu, double r,struct virus popop[],struct virus *next_gen_p,FILE **fPointer, int* N1, int* N2, int gen, int gen_num);
+struct virus *step(long *seed, int rep, int t, double cost, int N0, int L, int timestep, int krecord, double s, int K, double mu, double r,struct virus popop[],struct virus *next_gen_p,FILE **fPointer, int* N1, int* N2, int gen, int gen_num, double q, double a, double b, int type);
 int intmin(int argc,int array[]); //min value of an integer array
 int intsum(int size,int a[]);
+float survp(int type, double s, double q, double a, double b, int k)
 
 int main(int argc, char *argv[]) {
 	// set progress bar and initiate timer
@@ -76,6 +77,10 @@ int main(int argc, char *argv[]) {
 	char *N1r_s = argv[14];
 	char *seed_s = argv[15];
 	char *untilext_s = argv[16];
+	char *q_s = argv[17];
+	char *a_s = argv[18];
+	char *b_s = argv[19];
+	char *type_s = argv[20]; // type of mutation interactions. 0 = independent, 1 = intermediate eqn1, 2 = intermediate eqn2
 	char *end1;
 
 	int back = (int) strtol(back_s,&end1,10);
@@ -93,8 +98,12 @@ int main(int argc, char *argv[]) {
 	double N1r = (double) strtof(N1r_s,NULL);
 	long seed = strtol(seed_s,&end1,10);
 	int untilext = (int) strtol(untilext_s,&end1,10);
+	double q = (double) strtof(q_s,NULL);
+	double a = (double) strtof(a_s,NULL);
+	double b = (double) strtof(b_s,NULL);
+	int type = (int) strtol(type_s, &end1,10);
 
-	printf("back=%d, timestep=%d, untilext=%d, krecord=%d, rep=%d, L=%d, s=%.2f, N0=%d, K=%d, mu=%.5f, gen_num=%d, cost=%.2f, r=%.2f, N1r=%.2f\n", back, timestep, untilext, krecord, rep, L, s, N0, K, mu, gen_num, cost, r, N1r);
+	printf("back=%d, timestep=%d, untilext=%d, krecord=%d, rep=%d, L=%d, s=%.2f, N0=%d, K=%d, mu=%.5f, gen_num=%d, cost=%.2f, r=%.2f, N1r=%.2f, q=%.2f, a=%.2f, b=%.2f\n", back, timestep, untilext, krecord, rep, L, s, N0, K, mu, gen_num, cost, r, N1r, q, a, b);
 
 	//initiate csv file
 	//// set up folder
@@ -186,7 +195,7 @@ int main(int argc, char *argv[]) {
 				
 			}
 			mutate(&seed,back,N0,mu,L,pop,gen);
-			pop2 = step(&seed,(repe+1),(gen+1),cost,N0,L,timestep,krecord,s,K,mu,r,pop,next_gen,&fPointer,&N1,&N2,gen,gen_num);
+			pop2 = step(&seed,(repe+1),(gen+1),cost,N0,L,timestep,krecord,s,K,mu,r,pop,next_gen,&fPointer,&N1,&N2,gen,gen_num,q,a,b,type);
 			memcpy(pop,pop2,sizeof(struct virus)*N0); // cycle between pop and pop2 to continue looping.
 		}
 	}
@@ -201,7 +210,7 @@ int main(int argc, char *argv[]) {
 }
 
 
-struct virus *step(long *seed,int rep, int t, double cost, int N0, int L, int timestep, int krecord, double s, int K, double mu, double r,struct virus popop[],struct virus *next_gen_p,FILE **fPointer,int* N1, int* N2, int gen, int gen_num) {
+struct virus *step(long *seed,int rep, int t, double cost, int N0, int L, int timestep, int krecord, double s, int K, double mu, double r,struct virus popop[],struct virus *next_gen_p,FILE **fPointer,int* N1, int* N2, int gen, int gen_num, double q, double a, double b, int type) {
 	// goes through reproduction process
 	// the process is depicted at the top of the script.
 	// input: pop struct array
@@ -224,7 +233,7 @@ struct virus *step(long *seed,int rep, int t, double cost, int N0, int L, int ti
 			if (ran1(seed) < 0.5) 
 			{	
 				// pick s1
-				if (ran1(seed) < pow(1.0-s,popop[s1].k)) 
+				if (ran1(seed) < survp(type,s,q,a,b,popop[s1].k)) 
 				{
 					next_gen_p[l].id = popop[s1].id;
 					next_gen_p[l].k1 = popop[s1].k1;
@@ -246,7 +255,7 @@ struct virus *step(long *seed,int rep, int t, double cost, int N0, int L, int ti
 			else 
 			{ 
 				// pick s2
-				if (ran1(seed) < pow(1.0-s,popop[s2].k))
+				if (ran1(seed) < survp(type,s,q,a,b,popop[s2].k))
 				{
 					next_gen_p[l].id = popop[s2].id;
 					next_gen_p[l].k1 = popop[s2].k1;
@@ -272,7 +281,7 @@ struct virus *step(long *seed,int rep, int t, double cost, int N0, int L, int ti
 			{ // recombination happens
 				if (ran1(seed) < 0.5) 
 				{ // pick k1 from s1 and k2 from s2
-					if (ran1(seed) < pow(1.0-s,(popop[s1].k1 + popop[s2].k2))*(1.0-cost))
+					if (ran1(seed) < survp(type,s,q,a,b,(popop[s1].k1 + popop[s2].k2))*(1.0-cost))
 					{
 						next_gen_p[l].id = popop[s1].id;
 						next_gen_p[l].k1 = popop[s1].k1;
@@ -285,7 +294,7 @@ struct virus *step(long *seed,int rep, int t, double cost, int N0, int L, int ti
 				}
 				else
 				{ // pick k1 from s2 and k2 from s1
-					if (ran1(seed) < pow(1.0-s,(popop[s1].k2 + popop[s2].k1))*(1.0-cost))
+					if (ran1(seed) < survp(type,s,q,a,b,(popop[s1].k2 + popop[s2].k1))*(1.0-cost))
 					{
 						next_gen_p[l].id = popop[s2].id;
 						next_gen_p[l].k1 = popop[s2].k1;
@@ -301,7 +310,7 @@ struct virus *step(long *seed,int rep, int t, double cost, int N0, int L, int ti
 			{ // recombintion doesn't happen
 				if (ran1(seed) < 0.5) 
 				{ // pick s1
-					if (ran1(seed) < pow(1.0-s,popop[s1].k)*(1.0-cost))
+					if (ran1(seed) < survp(type,s,q,a,b,popop[s1].k)*(1.0-cost))
 					{
 						next_gen_p[l].id = popop[s1].id;
 						next_gen_p[l].k1 = popop[s1].k1;
@@ -314,7 +323,7 @@ struct virus *step(long *seed,int rep, int t, double cost, int N0, int L, int ti
 				}
 				else 
 				{ // pick s2
-					if (ran1(seed) < pow(1.0-s,popop[s2].k)*(1.0-cost))
+					if (ran1(seed) < survp(type,s,q,a,b,popop[s2].k)*(1.0-cost))
 					{
 						next_gen_p[l].id = popop[s2].id;
 						next_gen_p[l].k1 = popop[s2].k1;
@@ -656,4 +665,22 @@ int intsum(int size,int a[]){
     sum += a[i];
   }
   return sum;
+}
+
+float survp(int type, double s, double q, double a, double b, int k)
+{
+	// survival probability calculation depending on the type
+	if (type == 0)
+	{
+		float val = pow(1.0-s,k)
+	}
+	else if (type == 1)
+	{
+		float val = pow(1.0-s,pow(k,q))
+	}
+	else
+	{
+		float val = pow(1.0 - a*k - b*pow(k,2))
+	}
+	return val;
 }
