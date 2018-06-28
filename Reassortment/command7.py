@@ -21,6 +21,10 @@ cost = [0.00,0.02,0.04,0.06,0.08,0.1,0.12]
 r = 0.5 
 r2 = 0.75
 N1r = [0.5,0.6,0.7,0.8,0.9]
+q = 0
+a = 0
+b = 0
+type = 0
 destination = 'ultimate_test'
 file2run = sys.argv[1]
 version = file2run[4:7]
@@ -34,8 +38,8 @@ for m in range(len(mu)):
 					params = '%s %d %d %d %d %d %d %f %d %d %.5f %d %f %f %f'%(destination,back,timestep,krecord,untilext,
 																				rep,L,s[i],N0,K,mu[m],gen_num,cost[k],r,N1r[j])
 				elif version == '1.3':
-					params = '%s %d %d %d %d %d %f %d %d %.5f %d %f %f %f %d %d'%(destination,back,timestep,krecord,
-																			rep,L,s[i],N0,K,mu[m],gen_num,cost[k],r,N1r[j],seed,untilext)
+					params = '%s %d %d %d %d %d %f %d %d %.5f %d %f %f %f %d %d %f %f %f %d'%(destination,back,timestep,krecord,
+																			rep,L,s[i],N0,K,mu[m],gen_num,cost[k],r,N1r[j],seed,untilext,q,a,b,type)
 				elif version == '2.3':
 					params = '%s %d %d %d %d %d %f %d %d %.5f %d %f %f %f %f %f %d'%(destination,back,timestep,krecord,
 																			rep,L,s[i],N0,K,mu[m],gen_num,cost[k],r,r2,N1r[j],N2r,untilext)
@@ -50,3 +54,4 @@ for m in range(len(mu)):
 
 end = time.time()
 print('it took following minutes: ', (end - start)/60)
+cd('mkdir donzo')
