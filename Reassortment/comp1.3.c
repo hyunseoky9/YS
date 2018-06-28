@@ -670,17 +670,18 @@ int intsum(int size,int a[]){
 float survp(int type, double s, double q, double a, double b, int k)
 {
 	// survival probability calculation depending on the type
+	float val;
 	if (type == 0)
 	{
-		float val = pow(1.0-s,k);
+		val = pow(1.0-s,k);
 	}
 	else if (type == 1)
 	{
-		float val = pow(1.0-s,pow(k,q));
+		val = pow(1.0-s,pow(k,q));
 	}
 	else
 	{
-		float val = pow(1.0 - a*k - b*pow(k,2));
+		val = 1.0 - a*k - b*pow(k,2);
 	}
 	return val;
 }
