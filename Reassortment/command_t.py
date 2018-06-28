@@ -20,6 +20,11 @@ r = 0.5
 r2 = 0.75
 N1r = 0.2
 N2r = 0.2
+q=0
+a=0
+b=0
+type=0
+untilext=1
 destination = 'ctest'
 file2run = sys.argv[1]
 version = file2run[4:7]
@@ -30,8 +35,8 @@ if version == '1.2':
 	params = '%s %d %d %d %d %d %d %f %d %d %.5f %d %f %f %f'%(destination,back,timestep,krecord,untilext,
 																rep,L,s,N0,K,mu,gen_num,cost,r,N1r)
 elif version == '1.3':
-	params = '%s %d %d %d %d %d %f %d %d %.5f %d %f %f %f'%(destination,back,timestep,krecord,
-															rep,L,s,N0,K,mu,gen_num,cost,r,N1r)
+	params = '%s %d %d %d %d %d %f %d %d %.5f %d %f %f %f %d %d %f %f %f %d'%(destination,back,timestep,krecord,
+															rep,L,s,N0,K,mu,gen_num,cost,r,N1r,seed,untilext,q,a,b,type)
 elif version == '2.3':
 	params = '%s %d %d %d %d %d %f %d %d %.5f %d %f %f %f %f %f'%(destination,back,timestep,krecord,
 															rep,L,s,N0,K,mu,gen_num,cost,r,r2,N1r,N2r)
@@ -39,6 +44,6 @@ if file2run[-1] == "y": # file is .py
 	cd('python %s %s'%(file2run, params))
 else: # file is .c
 	cd('gcc -Wall %s -o cfile -lm'%(file2run))
-	cd('./cfile %s %d'%(params, seed))
+	cd('./cfile %s'%(params))
 count += 1
 # print("%d/%d DONE\n"%(count, len(mu)*len(back)*len(N1r)))

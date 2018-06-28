@@ -52,7 +52,7 @@ void mutate(long *seed, int back, int N0, double mu, int L, struct virus popop[]
 struct virus *step(long *seed, int rep, int t, double cost, int N0, int L, int timestep, int krecord, double s, int K, double mu, double r,struct virus popop[],struct virus *next_gen_p,FILE **fPointer, int* N1, int* N2, int gen, int gen_num, double q, double a, double b, int type);
 int intmin(int argc,int array[]); //min value of an integer array
 int intsum(int size,int a[]);
-float survp(int type, double s, double q, double a, double b, int k)
+float survp(int type, double s, double q, double a, double b, int k);
 
 int main(int argc, char *argv[]) {
 	// set progress bar and initiate timer
@@ -672,15 +672,15 @@ float survp(int type, double s, double q, double a, double b, int k)
 	// survival probability calculation depending on the type
 	if (type == 0)
 	{
-		float val = pow(1.0-s,k)
+		float val = pow(1.0-s,k);
 	}
 	else if (type == 1)
 	{
-		float val = pow(1.0-s,pow(k,q))
+		float val = pow(1.0-s,pow(k,q));
 	}
 	else
 	{
-		float val = pow(1.0 - a*k - b*pow(k,2))
+		float val = pow(1.0 - a*k - b*pow(k,2));
 	}
 	return val;
 }
