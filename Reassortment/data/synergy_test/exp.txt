@@ -1,0 +1,5 @@
+tries different function for selection process. 
+used command8.py to make it.
+(0) is independent function
+(1) uses (1-s)^(i^q)
+(2) uses 1-a*i-b^2*i
