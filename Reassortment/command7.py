@@ -50,7 +50,7 @@ for m in range(len(mu)):
 						cd('gcc -Wall %s -o cfile -lm'%(file2run))
 						cd('./cfile %s'%(params))
 					count += 1
-					print("%d/%d DONE\n"%(count, len(cost)*len(N1r)*len(s)*len(mu)))
+					print("%d/%d DONE\n"%(count, len(cost)*len(N1r)*len(s)*len(mu))*len(q))
 
 
 end = time.time()
