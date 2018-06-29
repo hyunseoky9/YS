@@ -1,4 +1,4 @@
-# was used to make ultimate_test data.
+# was used to make ultimate_test and ultimate_test2 data.
 # parameter adding needs to be fixed for comp1.2!!
 from os import system as cd
 import sys
@@ -21,11 +21,11 @@ cost = [0.00,0.02,0.04,0.06,0.08,0.1,0.12]
 r = 0.5 
 r2 = 0.75
 N1r = [0.5]
-q = 0
+q = [2,3]
 a = 0
 b = 0
-type = 0
-destination = 'ultimate_test'
+type = 1
+destination = 'ultimate_test2'
 file2run = sys.argv[1]
 version = file2run[4:7]
 
