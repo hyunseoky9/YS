@@ -27,7 +27,7 @@ q = [2,3]
 a = 0
 b = 0
 type = 1
-destination = 'test'
+destination = 'ultimate_test2'
 file2run = sys.argv[1]
 version = file2run[4:7]
 
