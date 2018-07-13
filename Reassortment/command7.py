@@ -4,6 +4,8 @@ from os import system as cd
 import sys
 import numpy as np
 import time
+from datetime import date
+td = date.today() #simulation start date
 start = time.time()
 seed = np.random.randint(-9223372036854775808,-1)
 back = 0
@@ -25,10 +27,12 @@ q = [2]
 a = 0
 b = 0
 type = 0
-destination = 'test'
+destination = 'test2'
 file2run = sys.argv[1]
 version = file2run[4:7]
-
+fh = open('progress.txt','w')
+fh.write('For simulation run on %d.%d.%d\n'%(td.day,td.month,td.year))
+fh.write("total number of simulation to be run: %d\n"%(len(cost)*len(N1r)*len(s)*len(mu)*len(q)))
 count = 0
 for m in range(len(mu)):
 	for i in range(len(s)):
@@ -50,9 +54,11 @@ for m in range(len(mu)):
 						cd('gcc -Wall %s -o cfile -lm'%(file2run))
 						cd('./cfile %s'%(params))
 					count += 1
-					print("%d/%d DONE\n"%(count, len(cost)*len(N1r)*len(s)*len(mu))*len(q))
+					fh.write("%d, "%(count))
+					print("%d/%d DONE\n"%(count, len(cost)*len(N1r)*len(s)*len(mu)*len(q)))
 
 
 end = time.time()
 print('it took following minutes: ', (end - start)/60)
-cd('mkdir donzo')
+fh.close()
+
