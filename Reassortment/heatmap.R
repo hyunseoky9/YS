@@ -1,12 +1,14 @@
 rm(list=ls())
 setwd("/home/hyunseok/Desktop/YS/Reassortment")
-raw <- read.csv("./data/ultimate_test/winning_prob.csv",header=T)
+raw <- read.csv("./data/ultimate_test2/winning_prob.csv",header=T)
 library(ggplot2)
 library(reshape2)
-mu_values = c(0.00067,0.0008,0.0010,0.0013,0.0033,0.0067,0.01)
-mat_p1 = subset(raw, mu == mu_values[3])
-mat_p2 = subset(raw, mu == mu_values[4])
-
+mu_values = c(0.0008,0.0010,0.0013,0.0033,0.0067,0.01)
+qval = 3
+mat_p1 = subset(raw, mu == mu_values[5])
+mat_p1 = subset(mat_p1, q == qval)
+mat_p2 = subset(raw, mu == mu_values[6])
+mat_p2 = subset(mat_p2, q == qval)
 mat = mat_p1
 p1 <- ggplot(mat,aes(c,y=1)) +
   geom_tile(aes(fill = prob), color = "white") +
