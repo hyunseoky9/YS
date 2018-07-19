@@ -27,7 +27,7 @@ q = [2,3]
 a = 0
 b = 0
 type = 1
-destination = 'ultimate_test2'
+destination = 'test'
 file2run = sys.argv[1]
 version = file2run[4:7]
 
@@ -52,7 +52,7 @@ for m in range(len(mu)):
 						cd('gcc -Wall %s -o cfile -lm'%(file2run))
 						cd('./cfile %s'%(params))
 					count += 1
-					print("%d/%d DONE\n"%(count, len(cost)*len(N1r)*len(s)*len(mu))*len(q))
+					print("%d/%d DONE\n"%(count, len(cost)*len(N1r)*len(s)*len(mu)*len(q)))
 
 
 end = time.time()
