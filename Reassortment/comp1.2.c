@@ -1,4 +1,6 @@
 /*
+OLD MODE THAT"S USELESS. USE 1.2.3 INSTEAD
+
 Influenza Competition model 1.2
 Same concept as comp model 1 but more efficient. 
 Some key differences:
@@ -68,27 +70,31 @@ int main(int argc, char *argv[]) {
 	char *back_s = argv[2];
 	char *timestep_s = argv[3];
 	char *krecord_s = argv[4];
-	char *untilext_s = argv[5];
-	char *rep_s = argv[6];
-	char *L_s = argv[7];
-	char *s_s = argv[8];
-	char *N0_s = argv[9];
-	char *K_s = argv[10];
-	char *mu_s = argv[11];
-	char *gen_num_s = argv[12];
-	char *cost_s = argv[13];
-	char *r_s = argv[14];
-	char *N1r_s = argv[15];
-	char *seed_s = argv[16];
+	char *rep_s = argv[5];
+	char *L_s = argv[6];
+	char *s_s = argv[7];
+	char *N0_s = argv[8];
+	char *K_s = argv[9];
+	char *mu_s = argv[10];
+	char *gen_num_s = argv[11];
+	char *cost_s = argv[12];
+	char *r_s = argv[13];
+	char *N1r_s = argv[14];
+	char *seed_s = argv[15];
+	char *untilext_s = argv[16];
+	char *q_s = argv[17];
+	char *a_s = argv[18];
+	char *b_s = argv[19];
+	char *type_s = argv[20]; // type of mutation interactions. 0 = independent, 1 = intermediate eqn1, 2 = intermediate eqn2
 	char *end1;
+
 	
 	int back = (int) strtol(back_s,&end1,10);
 	int timestep = (int) strtol(timestep_s,&end1,10);
-	int krecord = (int) strtol(krecord_s, &end1,10);
-	int untilext = (int) strtol(untilext_s,&end1,10);
+	int krecord = (int) strtol(krecord_s, &end1, 10);
 	int rep = (int) strtol(rep_s,&end1,10);
 	int L = (int) strtol(L_s,&end1,10);
-	double s = (double) strtof(s_s,NULL);
+	double s = (double) strtof(s_s, NULL);
 	int N0 = (int) strtol(N0_s,&end1,10);
 	int K = (int) strtol(K_s,&end1,10);
 	double mu = (double) strtof(mu_s,NULL);
@@ -97,7 +103,11 @@ int main(int argc, char *argv[]) {
 	double r = (double) strtof(r_s,NULL);
 	double N1r = (double) strtof(N1r_s,NULL);
 	long seed = strtol(seed_s,&end1,10);
-
+	int untilext = (int) strtol(untilext_s,&end1,10);
+	double q = (double) strtof(q_s,NULL);
+	double a = (double) strtof(a_s,NULL);
+	double b = (double) strtof(b_s,NULL);
+	int type = (int) strtol(type_s, &end1,10);
 	/*
 	int back = 0;
 	int timestep = 1;
@@ -116,7 +126,7 @@ int main(int argc, char *argv[]) {
 	char *destination = "ctest";
 	long seed = -2389;
 	*/
-	printf("back=%d, timestep=%d, krecord=%d, untilext=%d, rep=%d, L=%d, s=%.2f, N0=%d, K=%d, mu=%.5f, gen_num=%d, cost=%.2f, r=%.2f, N1r=%.2f\n", back, timestep, krecord, untilext, rep, L, s, N0, K, mu, gen_num, cost, r, N1r);
+	printf("type=%d, back=%d, timestep=%d, untilext=%d, krecord=%d, rep=%d, L=%d, s=%.2f, N0=%d, K=%d, mu=%.5f, gen_num=%d, cost=%.2f, r=%.2f, N1r=%.2f, q=%.2f, a=%.2f, b=%.2f\n", type, back, timestep, untilext, krecord, rep, L, s, N0, K, mu, gen_num, cost, r, N1r, q, a, b);
 		
 	//initiate csv file
 	//// set up folder
@@ -128,11 +138,11 @@ int main(int argc, char *argv[]) {
 	}
 	//// initiate file
 	char *filename = (char*) malloc(100*sizeof(char));
-	sprintf(filename,"%s/c1.2s_%d,%d,%d,%.2f,%d,%d,%.5f,%d,%.2f,%.2f,%.2f(0).csv",dest2,back,rep,L,s,N0,K,mu,gen_num,cost,r,N1r);
+	sprintf(filename,"%s/c1.3s_%d,%.3f,%.3f,%.3f,%d,%d,%d,%.2f,%d,%d,%.5f,%d,%.2f,%.2f,%.2f(0).csv",dest2,type,q,a,b,back,rep,L,s,N0,K,mu,gen_num,cost,r,N1r);
 	int filenum  = 0;
 	while( access( filename, F_OK ) != -1 ) { // check if file exists and change the file number if it exists
 	    filenum += 1;
-		sprintf(filename,"%s/c1.2s_%d,%d,%d,%.2f,%d,%d,%.5f,%d,%.2f,%.2f,%.2f(%d).csv",dest2,back,rep,L,s,N0,K,mu,gen_num,cost,r,N1r,filenum);
+		sprintf(filename,"%s/c1.3s_%d,%.3f,%.3f,%.3f,%d,%d,%d,%.2f,%d,%d,%.5f,%d,%.2f,%.2f,%.2f(%d).csv",dest2,type,q,a,b,back,rep,L,s,N0,K,mu,gen_num,cost,r,N1r,filenum);
 	}
 	FILE * fPointer;
 	fPointer = fopen(filename,"w");
@@ -203,7 +213,10 @@ int main(int argc, char *argv[]) {
 		free(pop1);
 		free(pop2);
 		N = N1 + N2;
-		fprintf(fPointer,"%d,%d,%d,%d,%.2f,%.2f\n",repe,1,N1,N2,kval1,kval2);
+		if (timestep)
+		{
+			fprintf(fPointer,"%d,%d,%d,%d,%.2f,%.2f\n",repe,1,N1,N2,kval1,kval2);		
+		}
 		/*
 		for (int i=0; i<N2; i++) {
 			printf("pop%d has k = %d\n",i,pop2b[i].k);
@@ -244,7 +257,14 @@ int main(int argc, char *argv[]) {
 			free(pop1);
 			free(pop2);
 			N = N1 + N2;
-			fprintf(fPointer,"%d,%d,%d,%d,%.2f,%.2f\n",repe,gen+1,N1,N2,kval1,kval2);
+			if (timestep)
+			{
+				fprintf(fPointer,"%d,%d,%d,%d,%.2f,%.2f\n",repe,gen+1,N1,N2,kval1,kval2);
+			}
+		}
+		if (timestep == 0)
+		{
+			fprintf(fPointer,"%d,%d,%.2f,%.2f\n",N1,N2,kval1,kval2);
 		}
 	}
 
