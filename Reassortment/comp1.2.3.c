@@ -119,7 +119,7 @@ int main(int argc, char *argv[]) {
 	long seed = -2389;
 	*/
 	printf("type=%d, back=%d, timestep=%d, untilext=%d, krecord=%d, rep=%d, L=%d, s=%.2f, N0=%d, K=%d, mu=%.5f, gen_num=%d, cost=%.2f, r=%.2f, N1r=%.2f, q=%.2f, a=%.2f, b=%.2f\n", type, back, timestep, untilext, krecord, rep, L, s, N0, K, mu, gen_num, cost, r, N1r, q, a, b);
-		
+	
 	//initiate csv file
 	//// set up folder
 	char *dest2 = (char*) malloc(50*sizeof(char)); 
@@ -128,29 +128,32 @@ int main(int argc, char *argv[]) {
 	if (stat(dest2, &st) == -1) { // if the destination folder doesn't exist, make one with that name.
     	mkdir(dest2, 0700);
 	}
+	
 	//// initiate file
-	char *filename = (char*) malloc(100*sizeof(char));
+	char *filename = (char*) malloc(1000*sizeof(char));
 	sprintf(filename,"%s/c1.2s_%d,%.3f,%.3f,%.3f,%d,%d,%d,%.2f,%d,%d,%.5f,%d,%.2f,%.2f,%.2f(0).csv",dest2,type,q,a,b,back,rep,L,s,N0,K,mu,gen_num,cost,r,N1r);
 	//sprintf(filename,"%s/c1.3s_%d,%d,%d,%d,%.2f,%d,%d,%.5f,%d,%.2f,%.2f,%.2f(0).csv",dest2,type,back,rep,L,s,N0,K,mu,gen_num,cost,r,N1r);
 	int filenum  = 0;
 	while( access( filename, F_OK ) != -1 ) { // check if file exists and change the file number if it exists
 	    filenum += 1;
-		sprintf(filename,"%s/c1.2s_%d,%.3f,%.3f,%.3f,%d,%d,%d,%.2f,%d,%d,%.5f,%d,%.2f,%.2f,%.2f(%d).csv",dest2,type,q,a,b,back,rep,L,s,N0,K,mu,gen_num,cost,r,N1r,filenum);
+		sprintf(filename,"%s/c1.2s_%d,%.3f,%.3f,%.3f,%d,%d,%d,%.2f,%d,%d,%.5f,%d,%.2f,%.2f,%.2f(%d).csv"
+			,dest2,type,q,a,b,back,rep,L,s,N0,K,mu,gen_num,cost,r,N1r,filenum);
 		//sprintf(filename,"%s/c1.3s_%d,%d,%d,%d,%.2f,%d,%d,%.5f,%d,%.2f,%.2f,%.2f(%d).csv",dest2,type,back,rep,L,s,N0,K,mu,gen_num,cost,r,N1r,filenum);
 	}
+
 	FILE * fPointer;
 	fPointer = fopen(filename,"w");
 	free(dest2);
 	free(filename);
-
+	
 	// simulation start
-
+	
 	if (timestep) {
 		fprintf(fPointer,"rep,t,pop1,pop2,k1,k2\n");
 	} else {
 		fprintf(fPointer,"pop1,pop2,k1,k2\n");
 	}
-
+	
 	// initiate some variables that will change over generations
 	int N1; // seg1 population
 	int N2; // seg2 population
@@ -170,6 +173,7 @@ int main(int argc, char *argv[]) {
 		N2 = N0*(1-N1r); // initial 2seg pop
 		N = N0;
 		pop = (struct virus*) malloc(sizeof(struct virus)*N);
+		
 		for (i=0;i<N1;i++){
 			pop[i].id = 1;
 			pop[i].k1 = 0;
@@ -186,21 +190,17 @@ int main(int argc, char *argv[]) {
 			pop[i + N1].progeny = 0;
 			pop[i + N1].w = 1;
 		}
-
+		
 		// make first generation
 		mutate(&seed,back,N,mu,L,pop,type,q,a,b,s); // seg1's mutate
 		popb = step(&seed,(repe+1),&N1,&N2,&N,L,timestep,krecord,s,K,mu,r,pop,next_gen,&fPointer,gen_num,untilext,1); // reproduction of seg1
-		
-
-
 		/*for (int i=0; i<N; i++) {
 			printf("popb%d has k = %d\n",i,popb[i].k);
 		}*/
-		
 		free(pop);
 
 		for (gen=1; gen<gen_num; gen++){ // run through generation
-			//printf("GEN=%d/%d\n",gen+1,gen_num);
+			printf("GEN=%d/%d\n",gen+1,gen_num);
 			// cycle btw pop and popb to continue looping.
 			pop = (struct virus*) malloc(sizeof(struct virus)*N);
 			memcpy(pop,popb,sizeof(struct virus)*N); 
