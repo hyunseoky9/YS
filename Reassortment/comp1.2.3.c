@@ -200,7 +200,7 @@ int main(int argc, char *argv[]) {
 		free(pop);
 
 		for (gen=1; gen<gen_num; gen++){ // run through generation
-			printf("GEN=%d/%d\n",gen+1,gen_num);
+			//printf("GEN=%d/%d\n",gen+1,gen_num);
 			// cycle btw pop and popb to continue looping.
 			pop = (struct virus*) malloc(sizeof(struct virus)*N);
 			memcpy(pop,popb,sizeof(struct virus)*N); 
