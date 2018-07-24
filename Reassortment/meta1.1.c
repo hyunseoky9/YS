@@ -74,7 +74,7 @@ int main(int argc, char *argv[])
 		mkdir(dest2, 0700);
 	}
 
-	char* filename = (char*) malloc(sizeof(char)*200);
+	char* filename = (char*) malloc(sizeof(char)*1000);
 	sprintf(filename,"%s/m1.1s_%d,%.3f,%d,%d,%.5f,%d,%.2f,%.2f(0).csv",dest2,rep,s,N0,K,u,gen_num,c,r);
 	int filenum = 0;
 

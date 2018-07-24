@@ -114,7 +114,7 @@ int main(int argc, char *argv[]) {
     	mkdir(dest2, 0700);
 	}
 	//// initiate file
-	char *filename = (char*) malloc(100*sizeof(char));
+	char *filename = (char*) malloc(1000*sizeof(char));
 	sprintf(filename,"%s/c1.3s_%d,%.3f,%.3f,%.3f,%d,%d,%d,%.2f,%d,%d,%.5f,%d,%.2f,%.2f,%.2f(0).csv",dest2,type,q,a,b,back,rep,L,s,N0,K,mu,gen_num,cost,r,N1r);
 	//sprintf(filename,"%s/c1.3s_%d,%d,%d,%d,%.2f,%d,%d,%.5f,%d,%.2f,%.2f,%.2f(0).csv",dest2,type,back,rep,L,s,N0,K,mu,gen_num,cost,r,N1r);
 	int filenum  = 0;
