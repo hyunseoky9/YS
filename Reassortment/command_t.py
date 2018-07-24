@@ -12,23 +12,23 @@ back = 0
 timestep = 0
 krecord = 0 #  2= smallest k of the subpop. 1= all indiv's k. 0=mean k.
 untilext = 0
-rep = 100
+rep = 10000
 L = 300
 s = [0.05]
 N0 = 1000
 K = 1000
-mu = [0.0007]#[0.00067] #[0.0002,0.0003,0.0004,0.0005,0.0006,0.0007,0.0008,0.0009,0.0010,0.0011,0.0012]
+mu = [0.0008]#[0.00067] #[0.0002,0.0003,0.0004,0.0005,0.0006,0.0007,0.0008,0.0009,0.0010,0.0011,0.0012]
 gen_num = 500
 cost = [0.00]
 r = 0.5 
 r2 = 0.75
-N1r = [0.5] #[0.5]
+N1r = [0.0] #[0.5]
 q = [2]
 a = 0
 b = 0
 type = 0
 
-destination = 'test'
+destination = 'compare_meta_comp'
 file2run = sys.argv[1]
 version = file2run[4:7]
 
