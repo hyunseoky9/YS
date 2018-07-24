@@ -28,7 +28,7 @@ double poipmf(double l, int k);
 int main(int argc, char *argv[])
 {
 	// clock start
-	clock_t begin = clock();
+	//clock_t begin = clock();
 
 	// prarmeter calling from os command
 	char *destination = argv[1];
@@ -62,8 +62,7 @@ int main(int argc, char *argv[])
 	long seed = strtol(seed_s,&end1,10);
 	int host_num = (int) strtol(host_num_s,&end1,10);
 	int kmax = (int) strtol(kmax_s,&end1,10);
-
-	printf("destination=%s, timestep=%d, krecord=%d, untilext=%d, rep=%d, s=%.2f, N0=%d, K=%d, u=%.5f, gen_num=%d, c=%.2f, r=%.2f",destination,timestep,krecord,untilext,rep,s,N0,K,u,gen_num,c,r);
+	printf("destination=%s, timestep=%d, krecord=%d, untilext=%d, rep=%d, s=%.2f, N0=%d, K=%d, u=%.5f, gen_num=%d, c=%.2f, r=%.2f\n",destination,timestep,krecord,untilext,rep,s,N0,K,u,gen_num,c,r);
 
 	//check if the destination folder exists and if not, make one.
 	char* dest2 = (char*) malloc(sizeof(char)*50);
@@ -88,6 +87,7 @@ int main(int argc, char *argv[])
 	free(dest2);
 	free(filename);
 	fprintf(fPointer,"pop2,k2\n");
+
 	// todo:
 	
 	// set the parameters with os command.
@@ -117,20 +117,35 @@ int main(int argc, char *argv[])
 	for (i=0; i<=2*kmax; i++){
 		factor[i] = poipmf(2*u,i); // probability of choosing i amount of mutation in a generation step.
 	}
+	double mutate_time, reast_time, repr_time;
+	clock_t begin, end;
 	//float count;
 	for (repe=0; repe < rep; repe++)
 	{
 		printf("\rREP = %d",repe);
+		fflush(stdout);
 
-
-		pop[0][0][0][0] = (double) N0; //N0 of virus with 0 mutations at initial condition.
+		for(i=0; i<host_num; i++)
+		{
+			pop[0][i][0][0] = (double) N0; //N0 of virus with 0 mutations at initial condition.
+		}
 		N = (double) N0;
 		curpop = 0;
 		for (gen=0; gen < gen_num; gen++)
 		{
+			begin = clock();
 			mutate(pop, &curpop, u, kmax, host_num, factor);
+			end = clock();
+			mutate_time += (begin - end)/ CLOCKS_PER_SEC;;
+			begin = clock();
 			reast(pop, &curpop, kmax, host_num, r, N);
+			end = clock();
+			reast_time += (begin - end)/ CLOCKS_PER_SEC;;
+			begin = clock();
 			repr(pop, &curpop, kmax, host_num,s,&N,c,K,&seed);
+			end = clock();
+			repr_time += (begin - end)/ CLOCKS_PER_SEC;;
+
 			/*
 			count = 0;
 			printf("after repr outside the function\n");
@@ -259,10 +274,11 @@ int main(int argc, char *argv[])
 
 	// make mutation, recombination, reproduction into a single process.
 	fclose(fPointer);
-	clock_t end = clock();
-	double time_spent = (begin - end)/ CLOCKS_PER_SEC;
+	// clock_t end = clock();
+	//double time_spent = (begin - end)/ CLOCKS_PER_SEC;
 	printf("\n");
-	printf("time spend was %.2f minutes\n", time_spent/60.0);
+	printf("mutate=%.2f, reast=%.2f, repr=%.2f\n",mutate_time/60.0, reast_time/60.0, repr_time/60.0);
+	//printf("time spend was %.2f minutes\n", time_spent/60.0);
 	return 0;
 }
 
