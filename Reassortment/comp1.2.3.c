@@ -160,8 +160,11 @@ int main(int argc, char *argv[]) {
 	struct virus *pop;
 	int repe,i,gen;
 	for (repe=0; repe<rep; repe++){	
-		printf("\rREP=%d/%d",repe,rep);	
-		fflush(stdout);	
+		if (repe % 100 == 0)
+		{
+			printf("\rREP=%d/%d",repe,rep);
+			fflush(stdout);
+		}
 		// initialize pop (generation 0)
 		N1 = N0*N1r; // initial 1seg pop
 		N2 = N0*(1-N1r); // initial 2seg pop
