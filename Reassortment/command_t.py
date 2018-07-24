@@ -11,7 +11,7 @@ seed = np.random.randint(-9223372036854775808,-1)
 back = 0
 timestep = 0
 krecord = 0 #  2= smallest k of the subpop. 1= all indiv's k. 0=mean k.
-untilext = 1
+untilext = 0
 rep = 10000
 L = 300
 s = [0.05]
@@ -22,13 +22,13 @@ gen_num = 500
 cost = [0.00]
 r = 0.5
 r2 = 0.75
-N1r = [0.5] #[0.5]
+N1r = [0.0] #[0.5]
 q = [2]
 a = 0
 b = 0
 type = 0
 
-destination = 'test'
+destination = 'compare_meta_comp'
 file2run = sys.argv[1]
 version = file2run[4:7]
 
