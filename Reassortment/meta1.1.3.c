@@ -127,13 +127,13 @@ int main(int argc, char *argv[])
 	}
 
 	char* filename = (char*) malloc(sizeof(char)*1000);
-	sprintf(filename,"%s/m1.1s_%d,%d,%d,%.3f,%d,%d,%.5f,%d,%.2f,%.2f,%d,%d,%.5f,%.5f(0).csv",dest2,timestep,krecord,rep,s,N0,K,u,gen_num,c,r,kmax,host_num,mig,tr);
+	sprintf(filename,"%s/m1.1.3s_%d,%d,%d,%.3f,%d,%d,%.5f,%d,%.2f,%.2f,%d,%d,%.5f,%.5f(0).csv",dest2,timestep,krecord,rep,s,N0,K,u,gen_num,c,r,kmax,host_num,mig,tr);
 	int filenum = 0;
 
 	while ( access(filename, F_OK) != -1) 
 	{
 		filenum += 1;
-		sprintf(filename,"%s/m1.1s_%d,%d,%d,%.3f,%d,%d,%.5f,%d,%.2f,%.2f,%d,%d,%.5f,%.5f(%d).csv",dest2,timestep,krecord,rep,s,N0,K,u,gen_num,c,r,kmax,host_num,mig,tr,filenum);
+		sprintf(filename,"%s/m1.1.3s_%d,%d,%d,%.3f,%d,%d,%.5f,%d,%.2f,%.2f,%d,%d,%.5f,%.5f(%d).csv",dest2,timestep,krecord,rep,s,N0,K,u,gen_num,c,r,kmax,host_num,mig,tr,filenum);
 	}
 	FILE* fPointer;
 	fPointer = fopen(filename,"w");
