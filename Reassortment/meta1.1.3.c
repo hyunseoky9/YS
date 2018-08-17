@@ -15,7 +15,7 @@ in 1.1.3, it uses simple one mutation accumulation equation.
 // function pre-decleration
 //ran1
 //poidev
-void mutate(double**** pop2, double*** pop1, int* curpop2, int* curpop1, double u, int kmax, int host_num, double* N2, double *N1);
+void mutate(double**** pop2, double*** pop1, int* curpop2, int* curpop1, double u, int kmax, int host_num, double* N2, double *N1, double factor[], int mutcap);
 void reast(double**** pop2, int* curpop, int kmax, int host_num, double r, double* N2);
 void repr(double**** pop2, double*** pop1, int* curpop2, int* curpop1, int kmax, int host_num, double s, double* N2, double* N1, double* N, double c, double K, long* seed);
 float ran1(long *seed);
@@ -24,6 +24,8 @@ float poidev(float xm,long *idum);
 double Nsum(int size,double N[]);
 void record(double* N1, double* N2, double*** pop1, double**** pop2, int kmax, int host_num, int timestep, int krecord, int curpop1, int curpop2, int rep, int gen, FILE **fPointer);
 void migrate(double**** pop2, double*** pop1, int* curpop2, int* curpop1, int kmax, int host_num, double* N2, double* N1, double* N, long* seed, double tr, double mig);
+double fact(int num);
+double poipmf(double l, int k);
 
 #define PRINTF 0	
 #define MUTPRINTF 0
@@ -56,6 +58,7 @@ int main(int argc, char *argv[])
 	char *pop1i_l_s = argv[19]; // subsidiary info for extracting pop2init info
 	char *tr_s = argv[20]; // transmission rate
 	char *mig_s = argv[21]; // migration rate to the migration pool
+	char *mutcap_s = argv[22]; // migration rate to the migration pool
 
 	char *end1;
 
@@ -77,6 +80,7 @@ int main(int argc, char *argv[])
 	int pop1i_l = (int) strtol(pop1i_l_s,&end1,10);
 	double tr = (double) strtof(tr_s, NULL);
 	double mig = (double) strtof(mig_s, NULL);
+	int mutcap = (int) strtol(mutcap_s,&end1,10);
 	int k,i,j,m;
 
 	//double pop1init[host_num];
@@ -115,7 +119,7 @@ int main(int argc, char *argv[])
 	}
 	free(dubstr);
 
-	printf("destination=%s, timestep=%d, krecord=%d, hostnum=%d, untilext=%d, kamx=%d, rep=%d, s=%.2f, N0=%d, K=%d, u=%.5f, gen_num=%d, c=%.2f, r=%.2f, tr=%.5f, mig=%.5f\n",destination,timestep,krecord,host_num,untilext,kmax,rep,s,N0,K,u,gen_num,c,r,tr,mig);
+	printf("destination=%s, timestep=%d, krecord=%d, hostnum=%d, untilext=%d, kamx=%d, rep=%d, s=%.2f, N0=%d, K=%d, u=%.5f, gen_num=%d, c=%.2f, r=%.2f, tr=%.5f, mig=%.5f, mutcap=%d\n",destination,timestep,krecord,host_num,untilext,kmax,rep,s,N0,K,u,gen_num,c,r,tr,mig,mutcap);
 
 	//check if the destination folder exists and if not, make one.
 	char* dest2 = (char*) malloc(sizeof(char)*50);
@@ -170,6 +174,7 @@ int main(int argc, char *argv[])
 	double* N = (double*) malloc(sizeof(double)*(host_num+1));
 	double* N2 = (double*) malloc(sizeof(double)*(host_num+1)); // current populationop size of 2segs. N2[i] is a pop size of host i. N2[0] is the total population size of 2segs.
 	double* N1 = (double*) malloc(sizeof(double)*(host_num+1)); // current populationop size of 1segs. N1[i] is a pop size of host i. N1[0] is the total population size of 1segs.
+	double factor[2*kmax]; // probability of getting n mutations organized in an array
 	//double record; // record of mutation amount in a pop of a host (mean or minimum depending on krecord)
 	//pop2: entire population of 2 segments including all metapops in each host. pop[i][1][1][2] = number of individual with 1 mutation in 1st segment and 2 mutation in 2nd segment in host 0.
 	//pop1: same thing as pop2 but of 1 segments. pop[i][1][1] = number of individual 1 with 1 mutation in its genome.
@@ -198,6 +203,10 @@ int main(int argc, char *argv[])
 			pop1[m][i] = (double*) malloc(sizeof(double*)*(2*kmax + 1));
 		}
 	}
+	for (i=0; i<=2*kmax; i++){
+		factor[i] = poipmf(2*u,i); // probability of choosing i amount of mutation in a generation step.
+	}
+
 	double mutate_time = 0;
 	double reast_time = 0;
 	double repr_time = 0;
@@ -233,7 +242,7 @@ int main(int argc, char *argv[])
 			{
 
 				begin = clock();
-				mutate(pop2, pop1, &curpop2, &curpop1, u, kmax, host_num, N2, N1);
+				mutate(pop2, pop1, &curpop2, &curpop1, u, kmax, host_num, N2, N1, factor, mutcap);
 				end = clock();
 				mutate_time += (double) (end - begin)/ CLOCKS_PER_SEC;
 				begin = clock();
@@ -359,9 +368,9 @@ int main(int argc, char *argv[])
 }
 
 
-void mutate(double**** pop2, double*** pop1, int* curpop2, int* curpop1, double u, int kmax, int host_num, double* N2, double *N1)
+void mutate(double**** pop2, double*** pop1, int* curpop2, int* curpop1, double u, int kmax, int host_num, double* N2, double *N1, double factor[], int mutcap)
 {
-	int s2m,s2m2, s1m, s1m2, i,j,k;
+	int s2m,s2m2, s1m, s1m2, i,j,k,l,l2,l3;
 	if (*curpop2 == 0)
 	{
 		s2m2 = *curpop2;
@@ -401,14 +410,20 @@ void mutate(double**** pop2, double*** pop1, int* curpop2, int* curpop1, double 
 			{
 				for (k=0; k<=kmax; k++)
 				{
-					printf("pop2[%d][%d][%d][%d]=%.2f\n",s2m2,i,j,k,pop2[s2m2][i][j][k]);
+					if (pop2[s2m2][i][j][k] > 0)
+					{
+						printf("pop2[%d][%d][%d][%d]=%.2f\n",s2m2,i,j,k,pop2[s2m2][i][j][k]);
+					}
 					count2 += pop2[s2m2][i][j][k];
 				}
 			}
 			for (j=0; j<=(kmax*2); j++)
 			{
-				printf("pop1[%d][%d][%d]=%.2f\n",s1m2,i,j,pop1[s1m2][i][j]);
-				count1 += pop1[s1m2][i][j];
+				if ( pop1[s1m2][i][j] >0)
+				{
+					printf("pop1[%d][%d][%d]=%.2f\n",s1m2,i,j,pop1[s1m2][i][j]);
+					count1 += pop1[s1m2][i][j];
+				}
 			}
 		}
 		printf("count2=%.3f\n",count2);
@@ -416,9 +431,14 @@ void mutate(double**** pop2, double*** pop1, int* curpop2, int* curpop1, double 
 		printf("\n");
 	}	
 
+	double factor2 = 0;
+	int left; // max of number of mutations that n(l,k) can give rise to.
+	//double equate;
+	int select;
+	int cap;
 	for (i=1; i<=host_num; i++)
 	{
-		if (N2[i] > 0)
+		if (N2[i] > 0) // 2 seg mutation process
 		{
 			for (j=0; j<=kmax; j++)
 			{
@@ -426,39 +446,105 @@ void mutate(double**** pop2, double*** pop1, int* curpop2, int* curpop1, double 
 				{
 					//printf("loop start (i,j,k)=(%d,%d,%d)\n",i,j,k);
 					// going to sum all the mutation_rate*n(l,k)
+					left = 2*kmax - (j + k);
 					//printf("left=%d\n",left);
-					if (j != kmax && k != kmax)
+					pop2[s2m][i][j][k] += pop2[s2m2][i][j][k];
+					if (left < mutcap) // if possible number of accumulation is smaller than mutcap, the max number of accumulation is the cap.
 					{
-						pop2[s2m][i][j][k] += (1 - 2*u)*pop2[s2m2][i][j][k];
-						pop2[s2m][i][j+1][k] += u*pop2[s2m2][i][j][k];
-						pop2[s2m][i][j][k+1] += u*pop2[s2m2][i][j][k];
-					}
-					else if (k == kmax && j != kmax)
-					{
-						pop2[s2m][i][j][k] += (1 - u)*pop2[s2m2][i][j][k];
-						pop2[s2m][i][j+1][k] += u*pop2[s2m2][i][j][k];
+						cap = left; 
 					}
 					else
 					{
-						pop2[s2m][i][j][k] += (1 - u)*pop2[s2m2][i][j][k];
-						pop2[s2m][i][j][k+1] += u*pop2[s2m2][i][j][k];
+						cap = mutcap;
+					}
+					for(l=1; l<=cap; l++)
+					{
+						//printf("l=%d\n",l);
+						factor2 = factor[l]*pop2[s2m2][i][j][k];
+						if (j==0 && k==0)
+						{
+							//printf("factor2=%.10f, j=%d, k=%d, factor[l]=%.3f, pop2[%d][%d][%d][%d]=%.3f\n",factor2,j,k,factor[l],s2m2,i,j,k,pop2[s2m2][i][j][k]);
+
+						}
+						//equate = 0;
+						pop2[s2m][i][j][k] -= factor2;
+						for(l2=0; l2<=l; l2++)
+						{
+							//printf("l2=%d\n",l2);
+							l3 = l - l2;
+							if(l2 + j <= kmax && l3 + k <= kmax)
+							{
+								if(l <= kmax - k && l <= kmax - j)
+								{
+									//printf("worked1 added=%.3f\n",factor2/(l + 1));
+									pop2[s2m][i][j+l2][k+l3] += factor2/(l + 1);
+									//equate += factor2/(l + 1);
+									//printf("pop2[%d][%d][%d][%d]=%.3f\n",m,i,j+l2,k+l3,pop2[m][i][j+l2][k+l3]);
+								}
+								else if(l <= kmax - k || l <= kmax - j)
+								{
+									if (k > j)
+									{
+										select = k;
+									}
+									else
+									{
+										select = j;
+									}
+									//printf("worked2 added=%.3f\n",factor2/(left + 1 - l));
+									pop2[s2m][i][j+l2][k+l3] += factor2/(kmax - select + 1);
+									//equate += factor2/(kmax - select + 1);
+									//printf("pop2[%d][%d][%d][%d]=%.3f\n",m,i,j+l2,k+l3,pop2[m][i][j+l2][k+l3]);
+								}
+								else
+								{
+									pop2[s2m][i][j+l2][k+l3] += factor2/(2*kmax - k - j - l + 1);
+									//equate += factor2/(2*kmax - k - j - l + 1);
+								}
+							}
+						}
+						/*
+						if (equate == factor2)
+						{
+							printf("equate = factor2; equate=%.3f, factor2=%.3f\n",equate,factor2);
+						}
+						else
+						{
+							printf("equate != factor2; equate=%.3f, factor2=%.3f\n",equate,factor2);
+						}
+						*/
 					}
 				}
 			}
 		}
 
-		if (N1[i] > 0)
+		if (N1[i] > 0) // 1 seg mutation process
 		{
-			for(j=0; j<=2*kmax; j++)
+			for (j=0; j<=kmax; j++)
 			{
-				if (j != 2*kmax)
+				//printf("loop start (i,j,k)=(%d,%d,%d)\n",i,j,k);
+				// going to sum all the mutation_rate*n(l,k)
+				left = 2*kmax - j;
+				//printf("left=%d\n",left);
+				pop1[s1m][i][j] += pop1[s1m2][i][j];
+				if (left < mutcap) // if possible number of accumulation is smaller than mutcap, the max number of accumulation is the cap.
 				{
-					pop1[s1m][i][j] += (1 - 2*u)*pop1[s1m2][i][j];
-					pop1[s1m][i][j+1] += 2*u*pop1[s1m2][i][j];
+					cap = left; 
+				}
+				else
+				{
+					cap = mutcap;
+				}
+				for(l=1; l<=cap; l++)
+				{
+					factor2 = factor[l]*pop1[s1m2][i][j];
+					pop1[s1m][i][j] -= factor2;
+					pop1[s1m][i][j+l] += factor2;
 				}
 			}
 		}
 	}
+
 	if(MUTPRINTF)
 	{
 		count2 = 0;
@@ -471,15 +557,21 @@ void mutate(double**** pop2, double*** pop1, int* curpop2, int* curpop1, double 
 			{	
 				for (k=0; k<=kmax; k++)
 				{
+					if (pop2[s2m][i][j][k] > 0)
+					{
+						printf("pop2[%d][%d][%d][%d]=%.2f\n",s2m,i,j,k,pop2[s2m][i][j][k]);
+					}
 					//pop2[m2][i][j][k] = 0;
-					printf("pop2[%d][%d][%d][%d]=%.2f\n",s2m,i,j,k,pop2[s2m][i][j][k]);
 					count2 += pop2[s2m][i][j][k];
 				}
 			}
 			for (j=0; j<=(kmax*2); j++)
 			{
-				printf("pop1[%d][%d][%d]=%.2f\n",s1m,i,j,pop1[s1m][i][j]);
-				count1 += pop1[s1m][i][j];
+				if (pop1[s1m][i][j] > 0)
+				{
+					printf("pop1[%d][%d][%d]=%.2f\n",s1m,i,j,pop1[s1m][i][j]);
+					count1 += pop1[s1m][i][j];
+				}
 			}
 		}
 		printf("count2=%.3f\n",count2);
@@ -1164,3 +1256,22 @@ float poidev(float xm,long *idum)
 }
 
 #undef PI
+
+double fact(int num)
+{
+	// factorial
+	double val = 1;
+	int i;
+	for (i=1; i<=num; i++)
+	{
+		val *= i;
+	}
+	return val;
+}
+
+double poipmf(double l, int k)
+{
+	//pmf function of poisson
+	double val = (pow(l,k)*exp(-1*l))/fact(k);
+	return val;
+}

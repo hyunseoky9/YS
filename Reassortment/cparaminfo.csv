@@ -1,0 +1,2 @@
+description,code,destination,back,timestep,krecord,rep,L,s,N0,K,mu,gen_num,cost,r,N1r,seed,untilext,q,a,b,type
+test,1,test3,0,1,0,500,300,0.05,10000,10000,0.0004*0.0008,500,0,0.5,0.5,random,0,3,0,0,0

@@ -20,11 +20,9 @@ How to navigate through this project:
 		comp2.3 and comp3.3 adds 3 segments and 8 segments respectively but needs a lot more work to run fine.
 
 		b) how to run
-		You basically use command(number).py to run them.
-		The comman.py's with smaller number may not be compatible anymore with the model files.
-		The latest one is command7.2.py and command7.py
+		same as running meta model.
 		To run simply type: 
-		```python command(number).py comp(version).c``` 
+		```python command.py comp(version).c (code)``` 
 
 	2) meta model
 		a) explanation
@@ -47,12 +45,12 @@ How to navigate through this project:
 			-Number of (number)~ pair in pop1init and pop2init has to match the host_num parameter.
 			-if you want random seed, type 'random'. If you need a consistent random number, put any negative integer below -9223372036854775808.
 		To run, simply type:
-		```python mcommand.py meta(ver).c (code)```
+		```python command.py meta(ver).c (code)```
 
 2. data storage
 	All data is stored in ./data.
 	Each simulation data is stored in a file. Each file has exp.txt that explains what the simulation was about.
-
+	./data/test is a scrap and can be erased at your convenience.
 3. data analysis.
 	In ./data, there's 2 .ipynb jupyter notebook file named data_viewer and data_viewer2. 
 	data_viewer has analysis of data from comp model and data_viewer2 has that of meta model.

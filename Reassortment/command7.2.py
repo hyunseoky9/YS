@@ -9,24 +9,24 @@ td = date.today() #simulation start date
 start = time.time()
 seed = np.random.randint(-9223372036854775808,-1)
 back = 0
-timestep = 0
+timestep = 1
 krecord = 0 #  2= smallest k of the subpop. 1= all indiv's k. 0=mean k.
 untilext = 1 
-rep = 10000# 10000
+rep = 100# 10000
 L = 300
-s = [0.05,0.02]
+s = [0.05]#,0.02]
 N0 = 1000
 K = 1000
-mu = [0.0008,0.001,0.0013,0.0033,0.0067,0.01]#[0.00067] #[0.0002,0.0003,0.0004,0.0005,0.0006,0.0007,0.0008,0.0009,0.0010,0.0011,0.0012]
+mu = [0.0008]#,0.001,0.0013,0.0033,0.0067,0.01]#[0.00067] #[0.0002,0.0003,0.0004,0.0005,0.0006,0.0007,0.0008,0.0009,0.0010,0.0011,0.0012]
 gen_num = 1000
-cost = [0.00,0.02,0.04,0.06,0.08,0.1,0.12]
+cost = [0.00]#,0.02,0.04,0.06,0.08,0.1,0.12]
 r = 0.5 
 r2 = 0.75
-N1r = [0.6,0.9] #[0.6,0.7,0.8,0.9] #[0.5]
+N1r = [0.5] #[0.6,0.7,0.8,0.9] #[0.5]
 q = [3]
 a = 0
 b = 0
-type = 1
+type = 0
 destination = 'test'
 file2run = sys.argv[1]
 version = file2run[4:7]
@@ -57,5 +57,4 @@ for m in range(len(mu)):
 
 end = time.time()
 print('it took following minutes: ', (end - start)/60)
-cd('mkdir donzo%d.%d.%d'%(td.day,td.month,td.year))
 
