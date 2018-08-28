@@ -1,7 +1,7 @@
 /*
 METAPOPULATION MODEL
 VIRAL REPLICATION HAPPENS IN MULTIPLE HOSTS WHO ARE CAPABLE OF TRANSMITTING THE VIRUS TO EACH OTHER IN A RANCOM NETWORK.
-in 1.1.3, it uses simple one mutation accumulation equation.
+in 1.1.4, in extension to 1.1.3, 2segs evolve out of a 1seg population sporadically throughout time.
 */
 #include <stdio.h>
 #include <stdlib.h>
@@ -21,10 +21,10 @@ void repr(double**** pop2, double**** pop1, int* curpop2, int* curpop1, int kmax
 float ran1(long *seed);
 float gammln(float xx);
 float poidev(float xm,long *idum);
-float gasdev(long* idum);
 double Nsum(int size,double N[]);
 void record(double* N1, double* N2, double**** pop1, double**** pop2, int kmax, int host_num, int timestep, int krecord, int curpop1, int curpop2, int rep, int gen, FILE **fPointer);
-void migrate(double**** pop2, double**** pop1, int* curpop2, int* curpop1, int kmax, int host_num, double* N2, double* N1, double* N, long* seed, double tr, double mig, double* K, int K0, double* kf,int gen, double kf0, double kfsd);
+void migrate(double**** pop2, double**** pop1, int* curpop2, int* curpop1, int kmax, int host_num, double* N2, double* N1, double* N, long* seed, double tr, double mig, double* K, int K0, double kf);
+void evol(double**** pop2, double**** pop1, int* curpop2, int* curpop1, int kmax, int host_num, double* N2, double* N1, double* N, long* seed, double evolq, double evolrate);
 double fact(int num);
 double poipmf(double l, int k);
 
@@ -33,6 +33,7 @@ double poipmf(double l, int k);
 #define REAPRINTF 0
 #define REPPRINTF 0 
 #define MIGPRINTF 0
+#define EVOPRINTF 0
 int main(int argc, char *argv[])
 {
 	// clock start
@@ -53,17 +54,16 @@ int main(int argc, char *argv[])
 	char *seed_s = argv[13]; // seed for random process
 	char *host_num_s = argv[14]; // host number
 	char *kmax_s = argv[15]; // maximum mutation amount in a segment
-	char *pop2init_s = argv[16]; // information on the proportion of initial population to the N0 for 2 segments.
-	char *pop2i_l_s = argv[17]; // subsidiary info for extracting pop2init info
+	//char *pop2init_s = argv[16]; // information on the proportion of initial population to the N0 for 2 segments.
+	//char *pop2i_l_s = argv[17]; // subsidiary info for extracting pop2init info
 	char *pop1init_s = argv[18]; // information on the proportion of initial population to the N0 for 1 segments.
 	char *pop1i_l_s = argv[19]; // subsidiary info for extracting pop2init info
 	char *tr_s = argv[20]; // transmission rate
 	char *mig_s = argv[21]; // migration rate to the migration pool
 	char *mutcap_s = argv[22]; // migration rate to the migration pool
-	char *kf0_s = argv[23];
-	char *kfsd_s = argv[24];
-	char *evolrate_s = argv[25];
-	char *evolq_s = argv[26];
+	char *kf_s = argv[23];
+	char *evolrate_s = argv[24];
+	char *evolq_s = argv[25];
 	char *end1;
 
 	int timestep = (int) strtol(timestep_s,&end1,10);
@@ -80,23 +80,21 @@ int main(int argc, char *argv[])
 	long seed = strtol(seed_s,&end1,10);
 	int host_num = (int) strtol(host_num_s,&end1,10);
 	int kmax = (int) strtol(kmax_s,&end1,10);
-	int pop2i_l = (int) strtol(pop2i_l_s,&end1,10);
+	//int pop2i_l = (int) strtol(pop2i_l_s,&end1,10);
 	int pop1i_l = (int) strtol(pop1i_l_s,&end1,10);
 	double tr = (double) strtof(tr_s, NULL);
 	double mig = (double) strtof(mig_s, NULL);
 	int mutcap = (int) strtol(mutcap_s,&end1,10);
-	double kf0 = (double) strtof(kf0_s, NULL);
-	double kfsd = (double) strtof(kfsd_s, NULL);
+	double kf = (double) strtof(kf_s, NULL);
 	double evolrate = (double) strtof(evolrate_s, NULL);
 	double evolq = (double) strtof(evolq_s, NULL);
-
 	int k,i,j,m;
-	//double pop1init[host_num];
-	double pop2init[host_num];
+	//double pop2init[host_num];
 	double pop1init[host_num];
 	int len = 0;
 
 	char* dubstr = (char*) malloc(sizeof(char)*10);
+	/*
 	for (i=0; i < pop2i_l; i++)
 	{
 
@@ -112,6 +110,7 @@ int main(int argc, char *argv[])
 		}
 	}
 	len = 0;
+	*/
 	for (i=0; i < pop1i_l; i++)
 	{
 		if (pop1init_s[i] != '~')
@@ -126,7 +125,8 @@ int main(int argc, char *argv[])
 		}
 	}
 	free(dubstr);
-	printf("destination=%s, timestep=%d, krecord=%d, hostnum=%d, untilext=%d, kamx=%d, rep=%d, s=%.2f, N0=%d, K0=%d, u=%.5f, gen_num=%d, c=%.2f, r=%.2f, tr=%.5f, mig=%.5f, mutcap=%d, seed=%lu, kf=%.2f, kfsd=%.2f, evolrate=%.2f, evolq=%.2f\n",destination,timestep,krecord,host_num,untilext,kmax,rep,s,N0,K0,u,gen_num,c,r,tr,mig,mutcap,seed,kf0,kfsd,evolrate,evolq);
+
+	printf("destination=%s, timestep=%d, krecord=%d, hostnum=%d, untilext=%d, kamx=%d, rep=%d, s=%.2f, N0=%d, K0=%d, u=%.5f, gen_num=%d, c=%.2f, r=%.2f, tr=%.5f, mig=%.5f, mutcap=%d, seed=%lu, kf=%.2f\n",destination,timestep,krecord,host_num,untilext,kmax,rep,s,N0,K0,u,gen_num,c,r,tr,mig,mutcap,seed,kf);
 
 	//check if the destination folder exists and if not, make one.
 	char* dest2 = (char*) malloc(sizeof(char)*50);
@@ -138,13 +138,13 @@ int main(int argc, char *argv[])
 	}
 
 	char* filename = (char*) malloc(sizeof(char)*1000);
-	sprintf(filename,"%s/m1.1.3s_%d,%d,%d,%.3f,%d,%d,%.5f,%d,%.2f,%.2f,%d,%d,%.5f,%.5f,%.2f(0).csv",dest2,timestep,krecord,rep,s,N0,K0,u,gen_num,c,r,kmax,host_num,mig,tr,kf0);
+	sprintf(filename,"%s/m1.1.3s_%d,%d,%d,%.3f,%d,%d,%.5f,%d,%.2f,%.2f,%d,%d,%.5f,%.5f,%.2f,%.2f,%.2f(0).csv",dest2,timestep,krecord,rep,s,N0,K0,u,gen_num,c,r,kmax,host_num,mig,tr,kf,evolrate,evolq);
 	int filenum = 0;
 
 	while ( access(filename, F_OK) != -1) 
 	{
 		filenum += 1;
-		sprintf(filename,"%s/m1.1.3s_%d,%d,%d,%.3f,%d,%d,%.5f,%d,%.2f,%.2f,%d,%d,%.5f,%.5f,%.2f(%d).csv",dest2,timestep,krecord,rep,s,N0,K0,u,gen_num,c,r,kmax,host_num,mig,tr,kf0,filenum);
+		sprintf(filename,"%s/m1.1.3s_%d,%d,%d,%.3f,%d,%d,%.5f,%d,%.2f,%.2f,%d,%d,%.5f,%.5f,%.2f,%.2f,%.2f(%d).csv",dest2,timestep,krecord,rep,s,N0,K0,u,gen_num,c,r,kmax,host_num,mig,tr,kf,evolrate,evolq,filenum);
 	}
 	FILE* fPointer;
 	fPointer = fopen(filename,"w");
@@ -199,11 +199,6 @@ int main(int argc, char *argv[])
 	double* N2 = (double*) malloc(sizeof(double)*(host_num+1)); // current populationop size of 2segs. N2[i] is a pop size of host i. N2[0] is the total population size of 2segs.
 	double* N1 = (double*) malloc(sizeof(double)*(host_num+1)); // current populationop size of 1segs. N1[i] is a pop size of host i. N1[0] is the total population size of 1segs.
 	double* K = (double*) malloc(sizeof(double)*(host_num));
-	double* kf = (double*) malloc(sizeof(double)*(host_num));
-	for (i=0; i<host_num; i++)
-	{
-		kf[i] = gasdev(&seed)*kfsd + kf0;
-	}
 	double factor[2*kmax]; // probability of getting n mutations organized in an array
 	//double record; // record of mutation amount in a pop of a host (mean or minimum depending on krecord)
 	//pop2: entire population of 2 segments including all metapops in each host. pop[i][1][1][2] = number of individual with 1 mutation in 1st segment and 2 mutation in 2nd segment in host 0.
@@ -249,57 +244,24 @@ int main(int argc, char *argv[])
 	double migr_time = 0;
 	double reco_time = 0;
 	clock_t begin, end;
-
 	for (repe=0; repe < rep; repe++)
 	{
-		if (rep <= 100)
+		if (repe % 100 == 0)
 		{
-			if (repe % 100 == 0)
-			{
-				printf("\rREP = %d",repe);
-				fflush(stdout);
-			}
+			printf("\rREP = %d",repe);
+			fflush(stdout);
 		}
-		for(i=0; i<=host_num; i++)
+		for(i=1; i<=host_num; i++)
 		{
-			for (j=0; j<=kmax; j++)
-			{
-				for (k=0; k<=kmax; k++)
-				{
-					{
-						pop2[0][i][j][k] = 0;
-						pop1[0][i][j][k] = 0;
-					}
-				}
-			}
-			if (i!=0)
-			{
-				pop2[0][i][0][0] = (double) N0*pop2init[i-1]; //N0 of virus with 0 mutations at initial condition.
-				pop1[0][i][0][0] = (double) N0*pop1init[i-1];
-				N1[i] = (double) N0*pop1init[i-1];
-				N2[i] = (double) N0*pop2init[i-1];
-				N[i] += N1[i] + N2[i];
-				K[i-1] = (double) K0;
-			}
+			pop1[0][i][0][0] = (double) N0*pop1init[i-1];
+			N1[i] = (double) N0*pop1init[i-1];
+			N2[i] = 0;
+			N[i] += N1[i] + N2[i];
+			K[i-1] = (double) K0;
 		}
-
 		N1[0] = Nsum(host_num,N1);
 		N2[0] = Nsum(host_num,N2);
 		N[0] = N1[0] + N2[0];
-		for(i=0; i<=host_num; i++)
-		{
-			for (j=0; j<=kmax; j++)
-			{
-				for (k=0; k<=kmax; k++)
-				{
-					{
-						//printf("pop2[0][%d][%d][%d]=%.2f\n",i,j,k,pop2[0][i][j][k]);
-					}
-				}
-			}
-		}
-
-		//N1[0] = Nsum(host_num,N1);
 		curpop1 = 0;
 		curpop2 = 0;
 		for (gen=0; gen < gen_num; gen++)
@@ -319,7 +281,8 @@ int main(int argc, char *argv[])
 				end = clock();
 				repr_time += (double) (end - begin)/ CLOCKS_PER_SEC;				
 				begin = clock();
-				migrate(pop2, pop1, &curpop2, &curpop1, kmax, host_num, N2, N1, N, &seed, tr, mig, K, K0, kf, gen, kf0, kfsd);
+				migrate(pop2, pop1, &curpop2, &curpop1, kmax, host_num, N2, N1, N, &seed, tr, mig, K, K0, kf);
+				evol(pop2,pop1, &curpop2, &curpop1, kmax, host_num, N2, N1, N, &seed, evolq, evolrate);
 				end = clock();
 				migr_time += (double) (end - begin)/ CLOCKS_PER_SEC;
 				N[0] = Nsum(host_num,N);
@@ -723,8 +686,6 @@ void reast(double**** pop2, int* curpop, int kmax, int host_num, double r, doubl
 			}
 		}
 	}
-
-
 	if (REAPRINTF)
 	{
 		count2 = 0;
@@ -875,11 +836,8 @@ void repr(double**** pop2, double**** pop1, int* curpop2, int* curpop1, int kmax
 				{
 					if (REPPRINTF)
 					{
-						if (pop2[s2m][i][j][k] > 0)
-						{
-							printf("pop2[%d][%d][%d][%d]=%.2f\n",s2m,i,j,k,pop2[s2m][i][j][k]);
-							count2 += pop2[s2m][i][j][k];
-						}
+						printf("pop2[%d][%d][%d][%d]=%.2f\n",s2m,i,j,k,pop2[s2m][i][j][k]);
+						count2 += pop2[s2m][i][j][k];
 					}
 				}
 			}
@@ -890,11 +848,8 @@ void repr(double**** pop2, double**** pop1, int* curpop2, int* curpop1, int kmax
 			{
 				if (REPPRINTF)
 				{
-					if (pop1[s1m][i][j][k] > 0)
-					{
-						printf("pop1[%d][%d][%d][%d]=%.2f\n",s1m,i,j,k,pop1[s1m][i][j][k]);
-						count1 += pop1[s1m][i][j][k];
-					}
+					printf("pop1[%d][%d][%d][%d]=%.2f\n",s1m,i,j,k,pop1[s1m][i][j][k]);
+					count1 += pop1[s1m][i][j][k];
 				}
 			}
 		}
@@ -907,7 +862,7 @@ void repr(double**** pop2, double**** pop1, int* curpop2, int* curpop1, int kmax
 	}
 }
 
-void migrate(double**** pop2, double**** pop1, int* curpop2, int* curpop1, int kmax, int host_num, double* N2, double* N1, double* N, long* seed, double tr, double mig, double* K, int K0, double* kf, int gen, double kf0, double kfsd)
+void migrate(double**** pop2, double**** pop1, int* curpop2, int* curpop1, int kmax, int host_num, double* N2, double* N1, double* N, long* seed, double tr, double mig, double* K, int K0, double kf)
 {
 	int s2m,s2m2,s1m,s1m2,i,j,k;
 	double count1, count2;
@@ -942,7 +897,8 @@ void migrate(double**** pop2, double**** pop1, int* curpop2, int* curpop1, int k
 	{
 		count1 = 0;
 		count2 = 0;
-		for (i=0; i<=host_num; i++)
+		printf("before migr inside the function\n");
+		for (i=1; i<=host_num; i++)
 		{
 			for (j=0; j<=kmax; j++)
 			{
@@ -982,8 +938,8 @@ void migrate(double**** pop2, double**** pop1, int* curpop2, int* curpop1, int k
 				{
 					pop2[s2m][i][j][k] = pop2[s2m2][i][j][k];
 					pop2[s2m][i][j][k] -= pop2[s2m2][i][j][k] * mig;
-					pop2[s2m][0][j][k] += pop2[s2m2][i][j][k] * mig;
-					//printf("pop2[s2m2][%d][%d][%d]=%.2f,mig=%.2f\n",i,j,k,pop2[s2m2][i][j][k],mig);
+					pop2[s2m][0][j][k] = pop2[s2m2][i][j][k] * mig;
+					
 				}
 			}
 		}
@@ -995,7 +951,8 @@ void migrate(double**** pop2, double**** pop1, int* curpop2, int* curpop1, int k
 				{
 					pop1[s1m][i][j][k] = pop1[s1m2][i][j][k];
 					pop1[s1m][i][j][k] -= pop1[s1m2][i][j][k] * mig;
-					pop1[s1m][0][j][k] += pop1[s1m2][i][j][k] * mig;
+					pop1[s1m][0][j][k] = pop1[s1m2][i][j][k] * mig;
+					
 				}
 			}
 		}
@@ -1029,9 +986,7 @@ void migrate(double**** pop2, double**** pop1, int* curpop2, int* curpop1, int k
 		N[i] = N2[i] + N1[i];
 		if (K[i-1] > 0.00000001)
 		{
-			K[i-1] -= kf[i];
-			//printf("kf=%.3f\n",kf);
-			//printf("K[%d]inside=%.2f\n",i-1,K[i-1]);
+			K[i-1] -= kf;
 		}
 		if (K[i-1] <= 0)
 		{
@@ -1039,42 +994,9 @@ void migrate(double**** pop2, double**** pop1, int* curpop2, int* curpop1, int k
 		}
 		if (N[i] == 0)
 		{
-			kf[i-1] = gasdev(seed)*kfsd + kf0;
 			K[i-1] = (double) K0;
 		}
 	}
-	//double Kmean=0, Kvar=0;
-	//int Ncount = 0;
-	//if (gen == 200 || gen == 300 || gen == 400)
-	/*{
-		for (i=0; i< host_num; i++)
-		{
-			/
-			if (N[i] > 0)
-			{
-				Ncount++;
-			}
-			if (gen == 200 || gen == 300 || gen == 400)
-			{
-				printf("K[%d]=%.0f\n",i,K[i]);
-			}
-			//Kmean += K[i];
-		}
-		if (Ncount == host_num && gen < 70)
-		{
-			printf("all hosts infected at gen=%d\n",gen);
-		}
-
-		Kmean = Kmean/host_num;
-		for (i=0; i< host_num; i++)
-		{
-			Kvar += pow((K[i] - Kmean),2);
-		}
-		Kvar = Kvar/host_num;
-		printf("Kmean = %.2f, Kvar = %.2f\n",Kmean,Kvar);
-	}*/
-
-
 	N2[0] = Nsum(host_num,N2);
 	N1[0] = Nsum(host_num,N1);
 	
@@ -1090,12 +1012,12 @@ void migrate(double**** pop2, double**** pop1, int* curpop2, int* curpop1, int k
 		{
 			if(MIGPRINTF)
 			{
-				if(pop1[s1m][0][j][k]>0)
+				if(pop2[s2m][0][j][k]>0)
 				{
-					printf("pop1[%d][0][%d][%d]=%.2f\n",s1m,j,k,pop1[s1m][0][j][k]);
+					printf("pop2[%d][0][%d][%d]=%.2f\n",s2m,j,k,pop2[s2m][0][j][k]);
 				}
 			}
-			pop1[s1m][0][j][k] = 0;
+			pop2[s2m][0][j][k] = 0;
 		}
 	}
 	for (j=0; j<=kmax; j++)
@@ -1104,12 +1026,12 @@ void migrate(double**** pop2, double**** pop1, int* curpop2, int* curpop1, int k
 		{
 			if(MIGPRINTF)
 			{
-				if(pop2[s2m][0][j][k]>0)
+				if(pop1[s1m][0][j][k]>0)
 				{
-					printf("pop2[%d][0][%d][%d]=%.2f\n",s2m,j,k,pop2[s2m][0][j][k]);
+					printf("pop1[%d][0][%d][%d]=%.2f\n",s1m,j,k,pop1[s1m][0][j][k]);
 				}
 			}
-			pop2[s2m][0][j][k] = 0;
+			pop1[s1m][0][j][k] = 0;
 		}
 	}
 
@@ -1153,6 +1075,109 @@ void migrate(double**** pop2, double**** pop1, int* curpop2, int* curpop1, int k
 		printf("count2=%.2f\n",count2);
 	}
 }
+
+void evol(double**** pop2, double**** pop1, int* curpop2, int* curpop1, int kmax, int host_num, double* N2, double* N1, double* N, long* seed, double evolq, double evolrate)
+{
+	// the class with the biggest size in pop1 transfers to pop2 with the proportion of evolq
+	int s2,s1,i,j,k,l;
+	double count1, count2;
+	s2 = *curpop2;
+	s1 = *curpop1;
+	
+	if (EVOPRINTF)
+	{
+		count1 = 0;
+		count2 = 0;
+		printf("before evol inside the function\n");
+		for (i=1; i<=host_num; i++)
+		{
+			for (j=0; j<=kmax; j++)
+			{
+				for (k=0; k<=kmax; k++)
+				{
+					if (pop2[s2][i][j][k] > 0)
+					{
+						printf("pop2[%d][%d][%d][%d]=%.2f\n",s2,i,j,k,pop2[s2][i][j][k]);
+						count2 += pop2[s2][i][j][k];
+					}
+				}
+			}
+			for (j=0; j<=kmax; j++)
+			{
+				for (k=0; k<=kmax; k++)
+				{
+					if (pop1[s1][i][j][k] > 0)
+					{
+						printf("pop1[%d][%d][%d][%d]=%.2f\n",s1,i,j,k,pop1[s1][i][j][k]);
+						count1 += pop1[s1][i][j][k];
+					}
+				}
+			}
+		}
+		printf("count2=%.3f\n",count2);
+		printf("count1=%.3f\n",count1);
+	}
+
+	double max = 0;
+	int ii, jj, kk;
+	for (l=0; l<(int)poidev(evolrate,seed); l++)
+	{	
+		for (i=1; i<=host_num; i++)
+		{
+			for (j=0; j<=kmax; j++)
+			{
+				for (k=0; k<=kmax; k++)
+				{
+					if (pop1[s1][i][j][k] > max)
+					{
+						ii = i;
+						jj = j;
+						kk = k;
+						max = pop1[s1][i][j][k];
+					}
+				}
+			}
+		}
+		pop2[s2][ii][jj][kk] = pop1[s1][ii][jj][kk]*evolq;
+		pop1[s1][ii][jj][kk] -= pop1[s1][ii][jj][kk]*evolq;
+	}
+	if (EVOPRINTF)
+	{
+		count1 = 0;
+		count2 = 0;
+		printf("after evol inside the function\n");
+		for (i=1; i<=host_num; i++)
+		{
+			for (j=0; j<=kmax; j++)
+			{
+				for (k=0; k<=kmax; k++)
+				{
+					if (pop2[s2][i][j][k] > 0)
+					{
+						printf("pop2[%d][%d][%d][%d]=%.2f\n",s2,i,j,k,pop2[s2][i][j][k]);
+						count2 += pop2[s2][i][j][k];
+					}
+				}
+			}
+			for (j=0; j<=kmax; j++)
+			{
+				for (k=0; k<=kmax; k++)
+				{
+					if (pop1[s1][i][j][k] > 0)
+					{
+						printf("pop1[%d][%d][%d][%d]=%.2f\n",s1,i,j,k,pop1[s1][i][j][k]);
+						count1 += pop1[s1][i][j][k];
+					}
+				}
+			}
+		}
+		printf("count2=%.3f\n",count2);
+		printf("count1=%.3f\n",count1);
+	}
+
+}
+
+
 
 double Nsum(int size,double N[])
 {
@@ -1472,28 +1497,4 @@ double poipmf(double l, int k)
 	//pmf function of poisson
 	double val = (pow(l,k)*exp(-1*l))/fact(k);
 	return val;
-}
-
-float gasdev(idum)
-long *idum;
-{
-	static int iset=0;
-	static float gset;
-	float fac,r,v1,v2;
-	float ran1();
-
-	if  (iset == 0) {
-		do {
-			v1=2.0*ran1(idum)-1.0;
-			v2=2.0*ran1(idum)-1.0;
-			r=v1*v1+v2*v2;
-		} while (r >= 1.0 || r == 0.0);
-		fac=sqrt(-2.0*log(r)/r);
-		gset=v1*fac;
-		iset=1;
-		return v2*fac;
-	} else {
-		iset=0;
-		return gset;
-	}
 }

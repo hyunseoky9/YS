@@ -68,6 +68,24 @@ handle.close()
 data = data[2::]
 data2 = data2[2::]
 
+#change pop2 init to usable form by c file.
+init  = ['pop1init','pop2init']
+for k in range(len(init)):
+	if ':' in data[dic[init[k]]]:
+		ini2temp = data[dic[init[k]]].split('~')[0:-1]
+		hmatch = 0 # needed to try to match the number of hosts
+		for i in range(len(ini2temp)):
+			ini2temp[i] = ini2temp[i].split(':')
+			ini2temp[i][1] += '~'
+			ini2temp[i][1] = ini2temp[i][1] * int(ini2temp[i][0])
+			hmatch += int(ini2temp[i][0])
+			ini2temp[i] = ini2temp[i][1]
+		data[dic[init[k]]] = ''.join(ini2temp)
+		data2[dic[init[k]]] = ''.join(ini2temp)
+		if hmatch < int(data[dic['host_num']]):
+			data[dic[init[k]]] += '0~'*(int(data[dic['host_num']]) - hmatch)
+			data2[dic[init[k]]] += '0~'*(int(data2[dic['host_num']]) - hmatch)
+
 #change seed
 if data[dic['seed']] == 'random':
 	seed = str(np.random.randint(-9223372036854775808,-1))
@@ -94,7 +112,7 @@ if model == 'm':
 params = []
 params = recursion(list_index,data,data2,0,params)
 for i in range(len(params)):
-	print('./cfile%s'%(params[i]))
+	#print('./cfile%s'%(params[i]))
 	cd('gcc -Wall %s -o cfile -lm'%(file2run))
 	cd('./cfile%s'%(params[i]))
 	print('%d/%d DONE'%((i+1),len(params)))

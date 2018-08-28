@@ -28,7 +28,7 @@ How to navigate through this project:
 		a) explanation
 		meta model is a multi metapopulation model where you can simulate 1segments and 2 segments growing from multiple hosts.
 		Each step, the viruses can migrate to the migration pool and transmit to other hosts with some transmission rate. 
-		it's an expansion of the comp model.
+		it's an expansion of the comp model. The carrying capacity (K) also varies host by host as K decreases over time and gets reset to K0 when that host's virus population dies off.
 		ver 1 and 2 allow viruses to catch multiple deleterious mutations, but ver 2 uses matrix computation. (meta1.1 & meta1.1.2)
 		ver 3 allows a virus to only accumulates 1 mutation per time in order to save computation time. (meta1.1.3)
 
@@ -41,7 +41,7 @@ How to navigate through this project:
 		To run the set of parameters on a row. You specify the code on a 'code' column for the row on shell command.
 		When making some parameters, theres are some rules you need to follow:
 			-set pop2initlen and pop1initlen to 0. Its just used for parsing in the c file.
-			-pop2init and pop1init has to have a number between 0 and 1 followed by '~'sign. Each (number)~ pair is whatever segment's initial frequency at a host. 
+			-pop2init and pop1init has to have a number between 0 and 1 followed by '~'sign. Each (number)~ pair is whatever segment's initial frequency at a host. pop2&1init can also be described in a different way when there's too many hosts to manually type for every host: '10:0.4~3:0.3~3:1'. This notation means the first 10 hosts have 0.4, next 3 0.3, then next 3 1. If the host number was say 100, the rest would be filled with '0~' automatically.
 			-Number of (number)~ pair in pop1init and pop2init has to match the host_num parameter.
 			-if you want random seed, type 'random'. If you need a consistent random number, put any negative integer below -9223372036854775808.
 		To run, simply type:
