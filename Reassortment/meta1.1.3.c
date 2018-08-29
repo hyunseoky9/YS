@@ -823,6 +823,7 @@ void repr(double**** pop2, double**** pop1, int* curpop2, int* curpop1, int kmax
 		printf("count1=%.3f\n",count1);
 	}
 	double poirate;
+	double g = 10000;
 	for (i=1; i<=host_num; i++)
 	{
 		if(N2[i] > 0)
@@ -840,7 +841,7 @@ void repr(double**** pop2, double**** pop1, int* curpop2, int* curpop1, int kmax
 					}
 					else
 					{
-						poirate = pop2[s2m2][i][j][k] * pow((1 - s), (k + j)) * (1 - c) * ((double)2 / (1.0 + (N[i]/K[i-1])));
+						poirate = pop2[s2m2][i][j][k] * pow((1 - s), (k + j)) * (1 - c) * ((double)(1+g) / (1.0 + g*(N[i]/K[i-1])));
 						pop2[s2m][i][j][k] = poidev(poirate,seed);
 					}
 				}
