@@ -254,13 +254,18 @@ int main(int argc, char *argv[])
 
 	for (repe=0; repe < rep; repe++)
 	{
-		if (rep <= 100)
+		if (rep > 100)
 		{
 			if (repe % 100 == 0)
 			{
 				printf("\rREP = %d",repe);
 				fflush(stdout);
 			}
+		}
+		else
+		{
+			printf("\rREP = %d",repe);
+			fflush(stdout);
 		}
 		for(i=0; i<=host_num; i++)
 		{
@@ -823,7 +828,7 @@ void repr(double**** pop2, double**** pop1, int* curpop2, int* curpop1, int kmax
 		printf("count1=%.3f\n",count1);
 	}
 	double poirate;
-	double g = 10000;
+	double g = 1;
 	for (i=1; i<=host_num; i++)
 	{
 		if(N2[i] > 0)
