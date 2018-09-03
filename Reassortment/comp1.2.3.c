@@ -163,7 +163,7 @@ int main(int argc, char *argv[]) {
 	struct virus *pop;
 	int repe,i,gen;
 	for (repe=0; repe<rep; repe++){	
-		if (repe % 100 == 0)
+		//if (repe % 100 == 0)
 		{
 			printf("\rREP=%d/%d",repe,rep);
 			fflush(stdout);
