@@ -118,7 +118,7 @@ int main(int argc, char *argv[]) {
 	char *destination = "ctest";
 	long seed = -2389;
 	*/
-	printf("type=%d, back=%d, timestep=%d, untilext=%d, krecord=%d, rep=%d, L=%d, s=%.2f, N0=%d, K=%d, mu=%.5f, gen_num=%d, cost=%.2f, r=%.2f, N1r=%.2f, q=%.2f, a=%.2f, b=%.2f\n", type, back, timestep, untilext, krecord, rep, L, s, N0, K, mu, gen_num, cost, r, N1r, q, a, b);
+	printf("destination=%s, type=%d, back=%d, timestep=%d, untilext=%d, krecord=%d, rep=%d, L=%d, s=%.2f, N0=%d, K=%d, mu=%.5f, gen_num=%d, cost=%.2f, r=%.2f, N1r=%.2f, q=%.2f, a=%.2f, b=%.2f\n", destination, type, back, timestep, untilext, krecord, rep, L, s, N0, K, mu, gen_num, cost, r, N1r, q, a, b);
 	
 	//initiate csv file
 	//// set up folder
@@ -131,13 +131,14 @@ int main(int argc, char *argv[]) {
 	
 	//// initiate file
 	char *filename = (char*) malloc(1000*sizeof(char));
-	sprintf(filename,"%s/c1.2s_%d,%.3f,%.3f,%.3f,%d,%d,%d,%.2f,%d,%d,%.5f,%d,%.2f,%.2f,%.2f,%d,%d,%d(0).csv",dest2,type,q,a,b,back,rep,L,s,N0,K,mu,gen_num,cost,r,N1r,timestep,krecord,gen_num);
+	sprintf(filename,"%s/c1.2s_%d,%.3f,%.3f,%.3f,%d,%d,%d,%.2f,%d,%d,%.5f,%d,%.2f,%.2f,%.2f,%d,%d(0).csv",
+		dest2,type,q,a,b,back,rep,L,s,N0,K,mu,gen_num,cost,r,N1r,timestep,krecord);
 	//sprintf(filename,"%s/c1.3s_%d,%d,%d,%d,%.2f,%d,%d,%.5f,%d,%.2f,%.2f,%.2f(0).csv",dest2,type,back,rep,L,s,N0,K,mu,gen_num,cost,r,N1r);
 	int filenum  = 0;
 	while( access( filename, F_OK ) != -1 ) { // check if file exists and change the file number if it exists
 	    filenum += 1;
-		sprintf(filename,"%s/c1.2s_%d,%.3f,%.3f,%.3f,%d,%d,%d,%.2f,%d,%d,%.5f,%d,%.2f,%.2f,%.2f,%d,%d,%d(%d).csv"
-			,dest2,type,q,a,b,back,rep,L,s,N0,K,mu,gen_num,cost,r,N1r,filenum,timestep,krecord,gen_num);
+		sprintf(filename,"%s/c1.2s_%d,%.3f,%.3f,%.3f,%d,%d,%d,%.2f,%d,%d,%.5f,%d,%.2f,%.2f,%.2f,%d,%d(%d).csv"
+			,dest2,type,q,a,b,back,rep,L,s,N0,K,mu,gen_num,cost,r,N1r,timestep,krecord,filenum);
 		//sprintf(filename,"%s/c1.3s_%d,%d,%d,%d,%.2f,%d,%d,%.5f,%d,%.2f,%.2f,%.2f(%d).csv",dest2,type,back,rep,L,s,N0,K,mu,gen_num,cost,r,N1r,filenum);
 	}
 
@@ -163,9 +164,17 @@ int main(int argc, char *argv[]) {
 	struct virus *pop;
 	int repe,i,gen;
 	for (repe=0; repe<rep; repe++){	
-		//if (repe % 100 == 0)
+		if (rep > 100)
 		{
-			printf("\rREP=%d/%d",repe,rep);
+			if (repe % 100 == 0)
+			{
+				printf("\rREP = %d",repe);
+				fflush(stdout);
+			}
+		}
+		else
+		{
+			printf("\rREP = %d",repe);
 			fflush(stdout);
 		}
 		// initialize pop (generation 0)
