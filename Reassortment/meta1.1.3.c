@@ -23,16 +23,16 @@ float gammln(float xx);
 float poidev(float xm,long *idum);
 float gasdev(long* idum);
 double Nsum(int size,double N[]);
-void record(double* N1, double* N2, double**** pop1, double**** pop2, int kmax, int host_num, int timestep, int krecord, int curpop1, int curpop2, int rep, int gen, FILE **fPointer);
+void record(double* N1, double* N2, double**** pop1, double**** pop2, int kmax, int host_num, int timestep, int krecord, int curpop1, int curpop2, int rep, int gen, FILE **fPointer, int sp);
 void migrate(double**** pop2, double**** pop1, int* curpop2, int* curpop1, int kmax, int host_num, double* N2, double* N1, double* N, long* seed, double tr, double mig, double* K, int K0, double* kf,int gen, double kf0, double kfsd);
 void evol(double**** pop2, double**** pop1, int* curpop2, int* curpop1, int kmax, int host_num, double* N2, double* N1, double* N, long* seed, double evolq, double evolrate);
 double fact(int num);
 double poipmf(double l, int k);
 
-#define PRINTF 0	
+#define PRINTF 0
 #define MUTPRINTF 0
 #define REAPRINTF 0
-#define REPPRINTF 0 
+#define REPPRINTF 0	
 #define MIGPRINTF 0
 #define EVOPRINTF 0
 int main(int argc, char *argv[])
@@ -40,32 +40,33 @@ int main(int argc, char *argv[])
 	// clock start
 	//clock_t begin = clock();
 	// prarmeter calling from os command
-	char *destination = argv[1]; // directory to save data at
-	char *timestep_s = argv[2]; // whether to record every generation
-	char *krecord_s = argv[3]; // how to record k. (0=mean&min k, 1=min k, 2=histogram)
-	char *untilext_s = argv[4]; // whether to run the simulation only until extinction (N = 0)
-	char *rep_s = argv[5]; // number of repetition
-	char *s_s = argv[6]; // selection coefficient
-	char *N0_s = argv[7]; // base initial frequency
-	char *K0_s = argv[8]; // carrying capacity in a host
-	char *u_s = argv[9]; // mutation rate per segment
-	char *gen_num_s = argv[10]; // number of generations
-	char *c_s = argv[11]; // cost of multisegmentation
-	char *r_s = argv[12]; // reassortment probability
-	char *seed_s = argv[13]; // seed for random process
-	char *host_num_s = argv[14]; // host number
-	char *kmax_s = argv[15]; // maximum mutation amount in a segment
-	char *pop2init_s = argv[16]; // information on the proportion of initial population to the N0 for 2 segments.
-	char *pop2i_l_s = argv[17]; // subsidiary info for extracting pop2init info
-	char *pop1init_s = argv[18]; // information on the proportion of initial population to the N0 for 1 segments.
-	char *pop1i_l_s = argv[19]; // subsidiary info for extracting pop2init info
-	char *tr_s = argv[20]; // transmission rate
-	char *mig_s = argv[21]; // migration rate to the migration pool
-	char *mutcap_s = argv[22]; // migration rate to the migration pool
-	char *kf0_s = argv[23];
-	char *kfsd_s = argv[24];
-	char *evolrate_s = argv[25];
-	char *evolq_s = argv[26];
+	char *description = argv[1];
+	char *destination = argv[3]; // directory to save data at
+	char *timestep_s = argv[4]; // whether to record every generation
+	char *krecord_s = argv[5]; // how to record k. (0=mean&min k, 1=min k, 2=histogram)
+	char *untilext_s = argv[6]; // whether to run the simulation only until extinction (N = 0)
+	char *rep_s = argv[7]; // number of repetition
+	char *s_s = argv[8]; // selection coefficient
+	char *N0_s = argv[9]; // base initial frequency
+	char *K0_s = argv[10]; // carrying capacity in a host
+	char *u_s = argv[11]; // mutation rate per segment
+	char *gen_num_s = argv[12]; // number of generations
+	char *c_s = argv[13]; // cost of multisegmentation
+	char *r_s = argv[14]; // reassortment probability
+	char *seed_s = argv[15]; // seed for random process
+	char *host_num_s = argv[16]; // host number
+	char *kmax_s = argv[17]; // maximum mutation amount in a segment
+	char *pop2init_s = argv[18]; // information on the proportion of initial population to the N0 for 2 segments.
+	char *pop2i_l_s = argv[19]; // subsidiary info for extracting pop2init info
+	char *pop1init_s = argv[20]; // information on the proportion of initial population to the N0 for 1 segments.
+	char *pop1i_l_s = argv[21]; // subsidiary info for extracting pop2init info
+	char *tr_s = argv[22]; // transmission rate
+	char *mig_s = argv[23]; // migration rate to the migration pool
+	char *mutcap_s = argv[24]; // migration rate to the migration pool
+	char *kf0_s = argv[25];
+	char *kfsd_s = argv[26];
+	char *evolrate_s = argv[27];
+	char *evolq_s = argv[28];
 	char *end1;
 
 	int timestep = (int) strtol(timestep_s,&end1,10);
@@ -138,60 +139,71 @@ int main(int argc, char *argv[])
 	{
 		mkdir(dest2, 0700);
 	}
-
+	char* paraminfo = (char*) malloc(sizeof(char)*1000);
+	sprintf(paraminfo,"%d,%d,%d,%.3f,%d,%d,%.5f,%d,%.2f,%.2f,%d,%d,%.5f,%.5f,%.2f,%.2f,%.2f,%.2f",timestep,krecord,rep,s,N0,K0,u,gen_num,c,r,kmax,host_num,mig,tr,kf0,kfsd,evolrate,evolq);
 	char* filename = (char*) malloc(sizeof(char)*1000);
-	sprintf(filename,"%s/m1.1.3s_%d,%d,%d,%.3f,%d,%d,%.5f,%d,%.2f,%.2f,%d,%d,%.5f,%.5f,%.2f,%.2f,%.2f,%.2f(0).csv",dest2,timestep,krecord,rep,s,N0,K0,u,gen_num,c,r,kmax,host_num,mig,tr,kf0,kfsd,evolrate,evolq);
+	//sprintf(filename,"%s/m1.1.3s_%d,%d,%d,%.3f,%d,%d,%.5f,%d,%.2f,%.2f,%d,%d,%.5f,%.5f,%.2f,%.2f,%.2f,%.2f(0).csv",dest2,timestep,krecord,rep,s,N0,K0,u,gen_num,c,r,kmax,host_num,mig,tr,kf0,kfsd,evolrate,evolq);
+	sprintf(filename,"%s/m1.1.3s_%s(0).csv",dest2,paraminfo);
 	int filenum = 0;
 
 	while ( access(filename, F_OK) != -1) 
 	{
 		filenum += 1;
-		sprintf(filename,"%s/m1.1.3s_%d,%d,%d,%.3f,%d,%d,%.5f,%d,%.2f,%.2f,%d,%d,%.5f,%.5f,%.2f,%.2f,%.2f,%.2f(%d).csv",dest2,timestep,krecord,rep,s,N0,K0,u,gen_num,c,r,kmax,host_num,mig,tr,kf0,kfsd,evolrate,evolq,filenum);
+		sprintf(filename,"%s/m1.1.3s_%s(%d).csv",dest2,paraminfo,filenum);
 	}
 	FILE* fPointer;
 	fPointer = fopen(filename,"w");
 	free(dest2);
 	free(filename);
+	fprintf(fPointer,"#%s\n",description); // putting in comments on the csv
+	fprintf(fPointer,"#%s\n",paraminfo);
 	char* str;
-	if (krecord == 1 || krecord == 0)
+	////////////////////////////////////////////////////////////////
+	int sp = 0; // if you want to print out some other statistics or values instead of the standard one, put 1.
+	////////////////////////////////////////////////////////////////
+	if (sp == 0)
 	{
-		str = (char*) malloc(sizeof(char)*(20*(host_num+1)*2) + 100); // (words + comma)*(host_num)*(seg1 and 2) + safety buffer
-	}
-	else if (krecord == 2)
-	{
-		str = (char*) malloc(sizeof(char)*(20*(2*kmax+1)*2) + 100); // (words + comma)*(host_num)*(seg1 and 2) + safety buffer
-	}
-	sprintf(str,"");
-	if(krecord != 2)
-	{
-		for(i=0; i<=host_num; i++)
+		if (krecord == 1 || krecord == 0)
 		{
-			sprintf(str,"%s,pop1.%d,pop2.%d,k1.%d,k2.%d",str,i,i,i,i);	
+			str = (char*) malloc(sizeof(char)*(20*(host_num+1)*2) + 100); // (words + comma)*(host_num)*(seg1 and 2) + safety buffer
+		}
+		else if (krecord == 2)
+		{
+			str = (char*) malloc(sizeof(char)*(20*(2*kmax+1)*2) + 100); // (words + comma)*(host_num)*(seg1 and 2) + safety buffer
+		}
+		sprintf(str,"");
+		if(krecord != 2)
+		{
+			for(i=0; i<=host_num; i++)
+			{
+				sprintf(str,"%s,pop1.%d,pop2.%d,k1.%d,k2.%d",str,i,i,i,i);	
+			}
+		}
+		else
+		{
+			sprintf(str,"%s,pop1.0,pop2.0",str);
+			for (i=0; i<=kmax*2; i++)
+			{
+				sprintf(str,"%s,p1k%d,p2k%d",str,i,i);
+			}
+		}
+		if (timestep)
+		{
+			fprintf(fPointer,"rep,gen%s\n",str);
+			//printf("rep,gen%s\n",str);
+		}
+		else
+		{
+			fprintf(fPointer,"rep%s\n",str);
+			//printf("rep,gen%s\n",str);
 		}
 	}
 	else
 	{
-		sprintf(str,"%s,pop1.0,pop2.0",str);
-		for (i=0; i<=kmax*2; i++)
-		{
-			sprintf(str,"%s,p1k%d,p2k%d",str,i,i);
-		}
+		//fprintf(fPointer,"rep,gen,k0bf\n");
 	}
-	if (timestep)
-	{
-		fprintf(fPointer,"rep,gen%s\n",str);
-		//printf("rep,gen%s\n",str);
-	}
-	else
-	{
-		fprintf(fPointer,"rep%s\n",str);
-		//printf("rep,gen%s\n",str);
-	}
+	free(paraminfo);
 	free(str);
-	// todo:
-	
-	// set the parameters with os command.
-	// set timer, file
 	
 	int gen,repe; //current generation and repetition.
 	int curpop1, curpop2; //current population index ur working witih.
@@ -245,12 +257,12 @@ int main(int argc, char *argv[])
 		factor[i] = poipmf(2*u,i); // probability of choosing i amount of mutation in a generation step.
 	}
 
-	double mutate_time = 0;
+	/*double mutate_time = 0;
 	double reast_time = 0;
 	double repr_time = 0;
 	double migr_time = 0;
 	double reco_time = 0;
-	clock_t begin, end;
+	clock_t begin, end;*/
 
 	for (repe=0; repe < rep; repe++)
 	{
@@ -320,24 +332,30 @@ int main(int argc, char *argv[])
 		{
 			if ( N2[0] > 0 || N1[0] > 0)
 			{
-				begin = clock();
+				//begin = clock();
 				mutate(pop2, pop1, &curpop2, &curpop1, u, kmax, host_num, N2, N1, factor, mutcap);
-				end = clock();
-				mutate_time += (double) (end - begin)/ CLOCKS_PER_SEC;
-				begin = clock();
+				//end = clock();
+				//mutate_time += (double) (end - begin)/ CLOCKS_PER_SEC;
+				//begin = clock();
 				reast(pop2, &curpop2, kmax, host_num, r, N2);
-				end = clock();
-				reast_time += (double) (end - begin)/ CLOCKS_PER_SEC;
-				begin = clock();
+				record(N1,N2,pop1,pop2,kmax,host_num,timestep,krecord,curpop1,curpop2,repe,gen,&fPointer,sp);
+				//end = clock();
+				//reast_time += (double) (end - begin)/ CLOCKS_PER_SEC;
+				//begin = clock();
 				repr(pop2, pop1, &curpop2, &curpop1, kmax, host_num,s,N2,N1,N,c,K,&seed);
-				end = clock();
-				repr_time += (double) (end - begin)/ CLOCKS_PER_SEC;				
-				begin = clock();
+				//end = clock();
+				//repr_time += (double) (end - begin)/ CLOCKS_PER_SEC;				
+				//begin = clock();
 				migrate(pop2, pop1, &curpop2, &curpop1, kmax, host_num, N2, N1, N, &seed, tr, mig, K, K0, kf, gen, kf0, kfsd);
-				end = clock();
-				migr_time += (double) (end - begin)/ CLOCKS_PER_SEC;
+				//end = clock();
+				//migr_time += (double) (end - begin)/ CLOCKS_PER_SEC;
 				evol(pop2,pop1, &curpop2, &curpop1, kmax, host_num, N2, N1, N, &seed, evolq, evolrate);
 				N[0] = Nsum(host_num,N);
+				/*if (gen > 800)
+				{
+					printf("gen=%d",gen);
+					getchar();
+				}*/
 				//printf("N[0]=%.3f\n",N[0]);
 				//printf("N=%.3f N[1]=%.3f, N[2]=%.3f N[3]=%.3f N[4]=%.3f N[5]=%.3f\n",N[0],N[1],N[2],N[3],N[4],N[5]);
 			}
@@ -390,19 +408,19 @@ int main(int argc, char *argv[])
 			// record it to the file
 			if(timestep == 1)
 			{
-				begin = clock();
-				record(N1,N2,pop1,pop2,kmax,host_num,timestep,krecord,curpop1,curpop2,repe,gen,&fPointer);
-				end = clock();
-				reco_time += (double) (end - begin)/ CLOCKS_PER_SEC;				
+				//begin = clock();
+				//record(N1,N2,pop1,pop2,kmax,host_num,timestep,krecord,curpop1,curpop2,repe,gen,&fPointer);
+				//end = clock();
+				//reco_time += (double) (end - begin)/ CLOCKS_PER_SEC;				
 			}
 
 		}
 		if(timestep == 0)
 		{
-			begin = clock();
-			record(N1,N2,pop1,pop2,kmax,host_num,timestep,krecord,curpop1,curpop2,repe,gen,&fPointer);
-			end = clock();
-			reco_time += (double) (end - begin)/ CLOCKS_PER_SEC;				
+			//begin = clock();
+			//record(N1,N2,pop1,pop2,kmax,host_num,timestep,krecord,curpop1,curpop2,repe,gen,&fPointer);
+			//end = clock();
+			//reco_time += (double) (end - begin)/ CLOCKS_PER_SEC;				
 		}
 		// erase pop data to start over simulation
 		for (m=0; m<2; m++)
@@ -446,7 +464,7 @@ int main(int argc, char *argv[])
 	// clock_t end = clock();
 	//double time_spent = (end - begin)/ CLOCKS_PER_SEC;
 	printf("\n");
-	printf("mutate=%.3f, reast=%.3f, repr=%.3f, migr=%.3f\n",mutate_time, reast_time, repr_time, migr_time);
+	//printf("mutate=%.3f, reast=%.3f, repr=%.3f, migr=%.3f\n",mutate_time, reast_time, repr_time, migr_time);
 	//printf("time spend was %.2f minutes\n", time_spent/60.0);
 	return 0;
 }
@@ -482,11 +500,13 @@ void mutate(double**** pop2, double**** pop1, int* curpop2, int* curpop1, double
 	}
 
 	double count1, count2;
-
+	double mean1, mean2;
 	if(MUTPRINTF)
 	{
 		count2 = 0;
 		count1 = 0;
+		mean2 = 0;
+		mean1 = 0;
 		printf("before mutation inside the function\n");
 		for (i=1; i<=host_num; i++)
 		{
@@ -496,9 +516,10 @@ void mutate(double**** pop2, double**** pop1, int* curpop2, int* curpop1, double
 				{
 					if (pop2[s2m2][i][j][k] > 0)
 					{
-						printf("pop2[%d][%d][%d][%d]=%f\n",s2m2,i,j,k,pop2[s2m2][i][j][k]);
+						//printf("pop2[%d][%d][%d][%d]=%f\n",s2m2,i,j,k,pop2[s2m2][i][j][k]);
 					}
 					count2 += pop2[s2m2][i][j][k];
+					mean2 += pop2[s2m2][i][j][k]*(j+k);
 				}
 			}
 			for (j=0; j<=kmax; j++)
@@ -507,14 +528,17 @@ void mutate(double**** pop2, double**** pop1, int* curpop2, int* curpop1, double
 				{
 					if (pop1[s1m2][i][j][k] > 0)
 					{
-						printf("pop1[%d][%d][%d][%d]=%f\n",s1m2,i,j,k,pop1[s1m2][i][j][k]);
+						//printf("pop1[%d][%d][%d][%d]=%f\n",s1m2,i,j,k,pop1[s1m2][i][j][k]);
 					}
 					count1 += pop1[s1m2][i][j][k];
+					mean1 += pop1[s1m2][i][j][k]*(j+k);
 				}
 			}
 		}
 		printf("count2=%.3f\n",count2);
 		printf("count1=%.3f\n",count1);
+		printf("mean2=%.3f\n",mean2/count2);
+		printf("mean1=%.3f\n",mean1/count1);
 		printf("\n");
 	}	
 
@@ -634,8 +658,9 @@ void mutate(double**** pop2, double**** pop1, int* curpop2, int* curpop1, double
 	{
 		count2 = 0;
 		count1 = 0;
+		mean2 = 0;
+		mean1 = 0;
 		printf("after mutation inside the function\n");
-		printf("\n");
 		for (i=1; i<=host_num; i++)
 		{
 			for (j=0; j<=kmax; j++)
@@ -644,10 +669,11 @@ void mutate(double**** pop2, double**** pop1, int* curpop2, int* curpop1, double
 				{
 					if (pop2[s2m][i][j][k] > 0)
 					{
-						printf("pop2[%d][%d][%d][%d]=%.2f\n",s2m,i,j,k,pop2[s2m][i][j][k]);
+						//printf("pop2[%d][%d][%d][%d]=%.2f\n",s2m,i,j,k,pop2[s2m][i][j][k]);
 					}
 					//pop2[m2][i][j][k] = 0;
 					count2 += pop2[s2m][i][j][k];
+					mean2 += pop2[s2m][i][j][k]*(j+k);
 				}
 			}
 			for (j=0; j<=kmax; j++)
@@ -656,15 +682,19 @@ void mutate(double**** pop2, double**** pop1, int* curpop2, int* curpop1, double
 				{
 					if (pop1[s1m][i][j][k] > 0)
 					{
-						printf("pop1[%d][%d][%d][%d]=%.2f\n",s1m,i,j,k,pop1[s1m][i][j][k]);
+						//printf("pop1[%d][%d][%d][%d]=%.2f\n",s1m,i,j,k,pop1[s1m][i][j][k]);
 					}
 					//pop2[m2][i][j][k] = 0;
 					count1 += pop1[s1m][i][j][k];
+					mean1 += pop1[s1m][i][j][k]*(j+k);
 				}
 			}
 		}
 		printf("count2=%.3f\n",count2);
 		printf("count1=%.3f\n",count1);
+		printf("mean2=%.3f\n",mean2/count2);
+		printf("mean1=%.3f\n",mean1/count1);
+		printf("\n");
 	}
 }
 
@@ -687,6 +717,7 @@ void reast(double**** pop2, int* curpop, int kmax, int host_num, double r, doubl
 	}
 	double count2;
 	double mean2 = 0;
+	double meanfit2 = 0; // mean fitness
 	if(REAPRINTF)
 	{
 		count2 = 0;
@@ -700,12 +731,15 @@ void reast(double**** pop2, int* curpop, int kmax, int host_num, double r, doubl
 					//printf("pop2[%d][%d][%d][%d]=%.2f\n",m2,i,j,k,pop2[m2][i][j][k]);
 					count2 += pop2[m2][i][j][k];
 					mean2 += pop2[m2][i][j][k]*(j+k);
+					meanfit2 += pop2[m2][i][j][k]*pow(0.95,(j+k));
 				}
 			}
 		}
 		mean2 = mean2 / count2;
+		meanfit2 = meanfit2 / count2;
 		printf("count2=%.3f\n",count2);
 		printf("mean2=%.3f\n",mean2);
+		printf("meanfit2=%.3f\n",meanfit2);
 
 	}	
 	double jp[kmax+1];
@@ -744,6 +778,7 @@ void reast(double**** pop2, int* curpop, int kmax, int host_num, double r, doubl
 	{
 		count2 = 0;
 		mean2 = 0;
+		meanfit2 = 0;
 		printf("after reast inside the function\n");
 		for (i=1; i<=host_num; i++)
 		{
@@ -755,12 +790,15 @@ void reast(double**** pop2, int* curpop, int kmax, int host_num, double r, doubl
 					//printf("pop2[%d][%d][%d][%d]=%.2f\n",m,i,j,k,pop2[m][i][j][k]);
 					count2 += pop2[m][i][j][k];
 					mean2 += pop2[m][i][j][k]*(j+k);
+					meanfit2 += pop2[m][i][j][k]*pow(0.95,(j+k));
 				}
 			}
 		}
 		mean2 = mean2/count2;
+		meanfit2 = meanfit2/count2;
 		printf("count2=%.3f\n",count2);
 		printf("mean2=%.3f\n",mean2);
+		printf("meanfit2=%.3f\n\n\n\n\n",meanfit2);
 	}
 }
 
@@ -794,10 +832,13 @@ void repr(double**** pop2, double**** pop1, int* curpop2, int* curpop1, int kmax
 
 	//double newN2, newN1;
 	double count1, count2;
+	double mean1, mean2;
 	if (REPPRINTF)
 	{
 		count1 = 0;
 		count2 = 0;
+		mean1 = 0;
+		mean2 = 0;
 		printf("before repr inside the function\n");
 		for (i=1; i<=host_num; i++)
 		{
@@ -807,8 +848,9 @@ void repr(double**** pop2, double**** pop1, int* curpop2, int* curpop1, int kmax
 				{
 					if (pop2[s2m2][i][j][k] > 0)
 					{
-						printf("pop2[%d][%d][%d][%d]=%.2f\n",s2m2,i,j,k,pop2[s2m2][i][j][k]);
+						//printf("pop2[%d][%d][%d][%d]=%.2f\n",s2m2,i,j,k,pop2[s2m2][i][j][k]);
 						count2 += pop2[s2m2][i][j][k];
+						mean2 += pop2[s2m2][i][j][k]*(j+k);
 					}
 				}
 			}
@@ -818,15 +860,19 @@ void repr(double**** pop2, double**** pop1, int* curpop2, int* curpop1, int kmax
 				{
 					if (pop1[s1m2][i][j][k] > 0)
 					{
-						printf("pop1[%d][%d][%d][%d]=%.2f\n",s1m2,i,j,k,pop1[s1m2][i][j][k]);
+						//printf("pop1[%d][%d][%d][%d]=%.2f\n",s1m2,i,j,k,pop1[s1m2][i][j][k]);
 						count1 += pop1[s1m2][i][j][k];
+						mean1 += pop1[s1m2][i][j][k]*(j+k);
 					}
 				}
 			}
 		}
 		printf("count2=%.3f\n",count2);
 		printf("count1=%.3f\n",count1);
+		printf("mean2=%.3f\n",mean2/count2);
+		printf("mean1=%.3f\n",mean1/count1);
 	}
+	/*
 	double poirate;
 	double g = 1;
 	for (i=1; i<=host_num; i++)
@@ -872,10 +918,35 @@ void repr(double**** pop2, double**** pop1, int* curpop2, int* curpop1, int kmax
 			}
 		}
 	}
+	*/
+	// FOR DETERMINISTIC SYSTEM (USED WITH deterministic_work.ipynb)
+	
+	double numerator = 0;
+	double numerator2 = 0;
+	for (j=0; j<=kmax; j++)
+	{
+		for (k=0; k<=kmax; k++)
+		{
+			// if total mutation number = 2*kmax the reproduction rate is 0.
+			numerator += pop1[s1m2][1][j][k]*pow((1-s),(j+k));
+			numerator2 += pop2[s2m2][1][j][k]*pow((1-s),(j+k));
+		}
+	}
+	for (j=0; j<=kmax; j++)
+	{
+		for (k=0; k<=kmax; k++)
+		{
+			pop1[s1m][1][j][k] = pop1[s1m2][1][j][k]*pow((1-s),(j+k))/numerator * N1[1];
+			pop2[s2m][1][j][k] = pop2[s2m2][1][j][k]*pow((1-s),(j+k))/numerator2 * N2[1];
+		}
+	}
+	
 	if(REPPRINTF)
 	{
 		count1 = 0;
 		count2 = 0;
+		mean1 = 0;
+		mean2 = 0;
 		printf("after repr inside the function\n");
 	}
 
@@ -893,8 +964,9 @@ void repr(double**** pop2, double**** pop1, int* curpop2, int* curpop1, int kmax
 					{
 						if (pop2[s2m][i][j][k] > 0)
 						{
-							printf("pop2[%d][%d][%d][%d]=%.2f\n",s2m,i,j,k,pop2[s2m][i][j][k]);
+							//printf("pop2[%d][%d][%d][%d]=%.2f\n",s2m,i,j,k,pop2[s2m][i][j][k]);
 							count2 += pop2[s2m][i][j][k];
+							mean2 += pop2[s2m][i][j][k]*(j+k);
 						}
 					}
 				}
@@ -908,8 +980,9 @@ void repr(double**** pop2, double**** pop1, int* curpop2, int* curpop1, int kmax
 				{
 					if (pop1[s1m][i][j][k] > 0)
 					{
-						printf("pop1[%d][%d][%d][%d]=%.2f\n",s1m,i,j,k,pop1[s1m][i][j][k]);
+						//printf("pop1[%d][%d][%d][%d]=%.2f\n",s1m,i,j,k,pop1[s1m][i][j][k]);
 						count1 += pop1[s1m][i][j][k];
+						mean1 += pop1[s1m][i][j][k]*(j+k);
 					}
 				}
 			}
@@ -920,6 +993,8 @@ void repr(double**** pop2, double**** pop1, int* curpop2, int* curpop1, int kmax
 	{
 		printf("count1=%.3f\n",count1);
 		printf("count2=%.3f\n",count2);
+		printf("mean2=%.3f\n",mean2/count2);
+		printf("mean1=%.3f\n",mean1/count1);
 	}
 }
 
@@ -1281,187 +1356,194 @@ double Nsum(int size,double N[])
   return sum;
 }
 
-void record(double* N1, double* N2, double**** pop1, double**** pop2, int kmax, int host_num, int timestep, int krecord, int curpop1, int curpop2, int rep, int gen, FILE **fPointer)
+void record(double* N1, double* N2, double**** pop1, double**** pop2, int kmax, int host_num, int timestep, int krecord, int curpop1, int curpop2, int rep, int gen, FILE **fPointer,int sp)
 {
 	int i,j,k;
 	double krecord1, krecord2;
 	double krecord1t, krecord2t;
 	double p1hist[2*kmax+1], p2hist[2*kmax+1];
+	
 	for (j=0; j<=2*kmax; j++) // pop1
 	{
 		p2hist[j] = 0;
 		p1hist[j] = 0;
 	}
-
 	char* str;
-	if (krecord == 0 || krecord == 1)
+	if (sp == 0)
 	{
-		str = (char*) malloc(sizeof(char)*(10+10+2*2*20*host_num));
-	}
-	else if (krecord == 2)
-	{
-		str = (char*) malloc(sizeof(char)*((2*kmax+1)*2*20 + 50)); //(number of mutations)*(1&2seg)*(digits for pop size + commas) + buffer
- 	}
-	sprintf(str,"");
-	//char* str = (char*) malloc(sizeof(char)*(10+10+2*2*20*host_num)); // repe_num + gen_num + (1&2seg)*(k&pop)*(value)*(host_num)
-	if(krecord == 0) // record mean
-	{
-		krecord1t = 0; // record of entire population for 1 seg
-		krecord2t = 0; // `` for 2 seg
-
-		for (i=1; i<=host_num; i++)
+		if (krecord == 0 || krecord == 1)
 		{
-			krecord1 = 0; // record for 1 host for 1seg
-			krecord2 = 0; // for 2 seg
-			if (N2[i] > 0)
-			{
-				for (j=0; j<=kmax; j++)
-				{
-					for (k=0; k<=kmax; k++)
-					{
-						krecord2 += pop2[curpop2][i][j][k]/N2[i] * (j + k);
-					}
-				}
-				krecord2t += krecord2*N2[i]/N2[0];
-			}
-			else
-			{
-				krecord2 = -1.0;
-			}
-			if (N1[i] > 0)
-			{
-				for (j=0; j<=kmax; j++)
-				{
-					for (k=0; k<=kmax; k++)
-					{
-						krecord1 += pop1[curpop1][i][j][k]/N1[i] * (j + k);
-					}
-				}
-				krecord1t += krecord1*N1[i]/N1[0];
-			}
-			else
-			{
-				krecord1 = -1.0;
-			}
-			sprintf(str,"%s,%.2f,%.2f,%.2f,%.2f",str,N1[i],N2[i],krecord1,krecord2);
+			str = (char*) malloc(sizeof(char)*(10+10+2*2*20*host_num));
 		}
-	}
-	else if(krecord == 1)// record minimum
-	{
-		krecord2 = kmax*2 + 1;
-		krecord1 = kmax*2 + 1;
-		for (i=1; i<=host_num; i++)
+		else if (krecord == 2)
 		{
-			if (N2[i] > 0)
+			str = (char*) malloc(sizeof(char)*((2*kmax+1)*2*20 + 50)); //(number of mutations)*(1&2seg)*(digits for pop size + commas) + buffer
+	 	}
+		sprintf(str,"");
+		//char* str = (char*) malloc(sizeof(char)*(10+10+2*2*20*host_num)); // repe_num + gen_num + (1&2seg)*(k&pop)*(value)*(host_num)
+		if(krecord == 0) // record mean
+		{
+			krecord1t = 0; // record of entire population for 1 seg
+			krecord2t = 0; // `` for 2 seg
+
+			for (i=1; i<=host_num; i++)
 			{
-				for (j=0; j<=kmax; j++)
+				krecord1 = 0; // record for 1 host for 1seg
+				krecord2 = 0; // for 2 seg
+				if (N2[i] > 0)
 				{
-					for (k=0; k<=kmax; k++)
+					for (j=0; j<=kmax; j++)
 					{
-						if((j + k) < krecord2)
+						for (k=0; k<=kmax; k++)
 						{
-							if(pop2[curpop2][i][j][k] > 0)
+							krecord2 += pop2[curpop2][i][j][k]/N2[i] * (j + k);
+						}
+					}
+					krecord2t += krecord2*N2[i]/N2[0];
+				}
+				else
+				{
+					krecord2 = -1.0;
+				}
+				if (N1[i] > 0)
+				{
+					for (j=0; j<=kmax; j++)
+					{
+						for (k=0; k<=kmax; k++)
+						{
+							krecord1 += pop1[curpop1][i][j][k]/N1[i] * (j + k);
+						}
+					}
+					krecord1t += krecord1*N1[i]/N1[0];
+				}
+				else
+				{
+					krecord1 = -1.0;
+				}
+				sprintf(str,"%s,%.2f,%.2f,%.2f,%.2f",str,N1[i],N2[i],krecord1,krecord2);
+			}
+		}
+		else if(krecord == 1)// record minimum
+		{
+			krecord2 = kmax*2 + 1;
+			krecord1 = kmax*2 + 1;
+			for (i=1; i<=host_num; i++)
+			{
+				if (N2[i] > 0)
+				{
+					for (j=0; j<=kmax; j++)
+					{
+						for (k=0; k<=kmax; k++)
+						{
+							if((j + k) < krecord2)
 							{
-								krecord2 = j + k;
+								if(pop2[curpop2][i][j][k] > 0)
+								{
+									krecord2 = j + k;
+								}
 							}
 						}
 					}
-				}
-				if (krecord2t > krecord2)
-				{
-					krecord2t = krecord2;
-				}
-			}
-			else
-			{
-				krecord2 = -1.0;
-			}
-			if (N1[i] > 0)
-			{
-				for (j=0; j<=kmax; j++)
-				{
-					for (k=0; k<=kmax; k++)
+					if (krecord2t > krecord2)
 					{
-						if((j + k) < krecord1)
+						krecord2t = krecord2;
+					}
+				}
+				else
+				{
+					krecord2 = -1.0;
+				}
+				if (N1[i] > 0)
+				{
+					for (j=0; j<=kmax; j++)
+					{
+						for (k=0; k<=kmax; k++)
 						{
-							if(pop1[curpop1][i][j][k] > 0)
+							if((j + k) < krecord1)
 							{
-								krecord1 = j + k;
+								if(pop1[curpop1][i][j][k] > 0)
+								{
+									krecord1 = j + k;
+								}
 							}
 						}
 					}
+					if (krecord1t > krecord1)
+					{
+						krecord1t = krecord1;
+					}
 				}
-				if (krecord1t > krecord1)
+				else
 				{
-					krecord1t = krecord1;
+					krecord1 = -1.0;
 				}
+				sprintf(str,"%s,%.2f,%.2f,%.2f,%.2f",str,N1[i],N2[i],krecord1,krecord2);
+			}
+		}
+		else // histogram
+		{
+			for (i=1; i<=host_num; i++)
+			{
+				for (j=0; j<=kmax; j++) // pop2
+				{
+					for (k=0; k<=kmax; k++)
+					{
+						p2hist[(j+k)] += pop2[curpop2][i][j][k];
+					}
+				}
+				for (j=0; j<=kmax; j++) // pop1
+				{
+					for (k=0; k<=kmax; k++)
+					{
+						p1hist[(j+k)] += pop1[curpop1][i][j][k];
+					}
+				}
+			}
+		}
+		if(timestep == 1)
+		{
+			if(krecord1t == 0)
+			{
+				krecord1t = -1.0;
+			}
+			if(krecord2t == 0)
+			{
+				krecord2t = -1.0;
+			}
+			if (krecord != 2)
+			{
+				fprintf(*fPointer,"%d,%d,%.2f,%.2f,%.8f,%.8f%s\n",rep+1,gen+1,N1[0],N2[0],krecord1t, krecord2t, str);
 			}
 			else
 			{
-				krecord1 = -1.0;
-			}
-			sprintf(str,"%s,%.2f,%.2f,%.2f,%.2f",str,N1[i],N2[i],krecord1,krecord2);
-		}
-	}
-	else // histogram
-	{
-		for (i=1; i<=host_num; i++)
-		{
-			for (j=0; j<=kmax; j++) // pop2
-			{
-				for (k=0; k<=kmax; k++)
+				for (j=0; j<=2*kmax; j++)
 				{
-					p2hist[(j+k)] += pop2[curpop2][i][j][k];
+					sprintf(str,"%s,%.8f,%.8f",str,p1hist[j],p2hist[j]);
 				}
+				fprintf(*fPointer,"%d,%d,%.2f,%.2f%s\n",rep+1,gen+1,N1[0],N2[0], str);
 			}
-			for (j=0; j<=kmax; j++) // pop1
-			{
-				for (k=0; k<=kmax; k++)
-				{
-					p1hist[(j+k)] += pop1[curpop1][i][j][k];
-				}
-			}
-		}
-	}
-
-	if(timestep == 1)
-	{
-		if(krecord1t == 0)
-		{
-			krecord1t = -1.0;
-		}
-		if(krecord2t == 0)
-		{
-			krecord2t = -1.0;
-		}
-		if (krecord != 2)
-		{
-			fprintf(*fPointer,"%d,%d,%.2f,%.2f,%.2f,%.2f%s\n",rep+1,gen+1,N1[0],N2[0],krecord1t, krecord2t, str);
 		}
 		else
 		{
-			for (j=0; j<=2*kmax; j++)
+			if (krecord != 2)
 			{
-				sprintf(str,"%s,%.0f,%.0f",str,p1hist[j],p2hist[j]);
+				fprintf(*fPointer,"%d,%.2f,%.2f,%.8f,%.8f,%s\n",rep+1,N1[0],N2[0],krecord1t, krecord2t, str);
 			}
-			fprintf(*fPointer,"%d,%d,%.2f,%.2f%s\n",rep+1,gen+1,N1[0],N2[0], str);
+			else
+			{
+				for (j=0; j<=2*kmax; j++)
+				{
+					sprintf(str,"%s,%.8f,%.8f",str,p1hist[j],p2hist[j]);
+				}
+				fprintf(*fPointer,"%d,%.2f,%.2f%s\n",rep+1,N1[0],N2[0], str);
+
+			}
 		}
 	}
 	else
 	{
-		if (krecord != 2)
-		{
-			fprintf(*fPointer,"%d,%.2f,%.2f,%.2f,%.2f,%s\n",rep+1,N1[0],N2[0],krecord1t, krecord2t, str);
-		}
-		else
-		{
-			for (j=0; j<=2*kmax; j++)
-			{
-				sprintf(str,"%s,%.0f,%.0f",str,p1hist[j],p2hist[j]);
-			}
-			fprintf(*fPointer,"%d,%.2f,%.2f%s\n",rep+1,N1[0],N2[0], str);
 
-		}
+		//fprintf();
 	}
 	//sprintf(str,"");
 	//free(str); 

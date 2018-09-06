@@ -1,3 +1,3 @@
 description,code ,destination,back,timestep,krecord,rep,L,s,N0,K,mu,gen_num,cost,r,N1r,seed,untilext,q,a,b,type
-test divergence in deterministic situation,1,test3,0,1,0,100,300,0.05,100000,100000,0.0008,2000,0,0.5,0.5,random,0,0,0,0,0
-1seg equilibrium k,2,test,0,1,0,50,300,0.05,200000,200000,0.0002,1000,0,0.5,1,random,0,0,0,0,0
+test divergence in deterministic situation,1,test3,0,1,0,100,300,0.05,100000,100000,0.0004,2000,0,0.5,0.5,random,0,0,0,0,0
+1seg equilibrium k,2,test,0,1,0,50,300,0.05,200000,200000,0.0004,1000,0,0.5,1,random,0,0,0,0,0

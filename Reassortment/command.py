@@ -62,11 +62,14 @@ for line in handle:
 		# making dictionary of parameters.
 		data = line.strip().split(",")
 		for i in range(len(data)):
-			dic[data[i]] = i - 2 # considering we're going to take out 'code' and 'description' from data array 
+			dic[data[i]] = i #- 2 # considering we're going to take out 'code' and 'description' from data array 
 	line_num += 1
 handle.close()
-data = data[2::]
-data2 = data2[2::]
+# getting rid of space bars in description.
+data[0] = data[0].replace(" ","_")
+data2[0] = data2[0].replace(" ","_")
+#data = data[2::]
+#data2 = data2[2::]
 
 #change pop2 init to usable form by c file.
 if file2run[0] == 'm':
